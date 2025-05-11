@@ -4,10 +4,27 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import NewProcessForm from '@/components/forms/NewProcessForm';
 import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from "sonner";
 
-const NewProcessDialog: React.FC = () => {
+interface NewProcessDialogProps {
+  onProcessCreated?: () => void;
+}
+
+const NewProcessDialog: React.FC<NewProcessDialogProps> = ({ onProcessCreated }) => {
+  const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
+
+  const handleProcessSubmit = () => {
+    toast.success("Processo criado com sucesso!");
+    setOpen(false);
+    if (onProcessCreated) {
+      onProcessCreated();
+    }
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -21,7 +38,7 @@ const NewProcessDialog: React.FC = () => {
             Preencha os dados para cadastrar um novo processo
           </DialogDescription>
         </DialogHeader>
-        <NewProcessForm />
+        <NewProcessForm onSubmitSuccess={handleProcessSubmit} />
       </DialogContent>
     </Dialog>
   );
