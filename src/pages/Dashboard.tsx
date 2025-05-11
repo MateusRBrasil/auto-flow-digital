@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, PieChart } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 import { 
   BarChart4, 
   FileText, 
@@ -23,6 +23,7 @@ import {
   DialogTrigger 
 } from '@/components/ui/dialog';
 import NewProcessForm from '@/components/forms/NewProcessForm';
+import * as RechartsPrimitive from "recharts";
 
 const mockProcesses = [
   {
@@ -103,6 +104,27 @@ const Dashboard: React.FC = () => {
         borderWidth: 1,
       },
     ],
+  };
+
+  // Transform data for Recharts format
+  const barData = barChartData.labels.map((label, index) => ({
+    name: label,
+    processos: barChartData.datasets[0].data[index],
+  }));
+
+  const pieData = pieChartData.labels.map((label, index) => ({
+    name: label,
+    value: pieChartData.datasets[0].data[index],
+  }));
+
+  const chartConfig = {
+    processos: {
+      label: 'Processos',
+      theme: {
+        light: 'rgba(59, 130, 246, 0.5)',
+        dark: 'rgba(59, 130, 246, 0.7)',
+      },
+    },
   };
 
   return (
@@ -188,7 +210,15 @@ const Dashboard: React.FC = () => {
             <CardDescription>Volume de processos nos últimos 6 meses</CardDescription>
           </CardHeader>
           <CardContent>
-            <BarChart data={barChartData} className="aspect-[4/3]" />
+            <ChartContainer config={chartConfig} className="aspect-[4/3]">
+              <RechartsPrimitive.BarChart data={barData}>
+                <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
+                <RechartsPrimitive.XAxis dataKey="name" />
+                <RechartsPrimitive.YAxis />
+                <RechartsPrimitive.Tooltip />
+                <RechartsPrimitive.Bar dataKey="processos" fill="var(--color-processos)" />
+              </RechartsPrimitive.BarChart>
+            </ChartContainer>
           </CardContent>
         </Card>
         <Card>
@@ -197,7 +227,27 @@ const Dashboard: React.FC = () => {
             <CardDescription>Distribuição de processos por tipo</CardDescription>
           </CardHeader>
           <CardContent>
-            <PieChart data={pieChartData} className="aspect-[4/3]" />
+            <ChartContainer config={chartConfig} className="aspect-[4/3]">
+              <RechartsPrimitive.PieChart>
+                <RechartsPrimitive.Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({name}) => name}
+                >
+                  {pieData.map((entry, index) => (
+                    <RechartsPrimitive.Cell 
+                      key={`cell-${index}`} 
+                      fill={pieChartData.datasets[0].backgroundColor[index]} 
+                    />
+                  ))}
+                </RechartsPrimitive.PieChart>
+                <RechartsPrimitive.Tooltip />
+              </RechartsPrimitive.PieChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
