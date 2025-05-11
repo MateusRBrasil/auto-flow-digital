@@ -244,7 +244,7 @@ const Dashboard: React.FC = () => {
                       fill={pieChartData.datasets[0].backgroundColor[index]} 
                     />
                   ))}
-                </RechartsPrimitive.PieChart>
+                </RechartsPrimitive.Pie>
                 <RechartsPrimitive.Tooltip />
               </RechartsPrimitive.PieChart>
             </ChartContainer>
