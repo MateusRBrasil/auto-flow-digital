@@ -36,7 +36,11 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-const NewProcessForm = () => {
+interface NewProcessFormProps {
+  onSubmitSuccess?: () => void;
+}
+
+const NewProcessForm: React.FC<NewProcessFormProps> = ({ onSubmitSuccess }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,6 +52,9 @@ const NewProcessForm = () => {
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     console.log(data);
     // Implementar lógica para salvar o processo
+    if (onSubmitSuccess) {
+      onSubmitSuccess();
+    }
   };
 
   return (
