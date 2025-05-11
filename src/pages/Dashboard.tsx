@@ -1,30 +1,13 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer } from "@/components/ui/chart";
-import { 
-  BarChart4, 
-  FileText, 
-  Truck, 
-  Users, 
-  DollarSign,
-  Plus
-} from "lucide-react";
-import ProcessCard from '@/components/ProcessCard';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import NewProcessForm from '@/components/forms/NewProcessForm';
-import * as RechartsPrimitive from "recharts";
+import { FileText, Truck, Users, DollarSign } from "lucide-react";
+import SummaryCard from '@/components/dashboard/SummaryCard';
+import NewProcessDialog from '@/components/dashboard/NewProcessDialog';
+import BarChartCard from '@/components/dashboard/BarChartCard';
+import PieChartCard from '@/components/dashboard/PieChartCard';
+import ProcessesTabs from '@/components/dashboard/ProcessesTabs';
 
+// Sample data for the dashboard
 const mockProcesses = [
   {
     id: "PROC-001",
@@ -69,8 +52,7 @@ const mockProcesses = [
 ];
 
 const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-
+  // Chart data configuration
   const barChartData = {
     labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
     datasets: [
@@ -131,179 +113,56 @@ const Dashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Novo Processo
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Novo Processo</DialogTitle>
-              <DialogDescription>
-                Preencha os dados para cadastrar um novo processo
-              </DialogDescription>
-            </DialogHeader>
-            <NewProcessForm />
-          </DialogContent>
-        </Dialog>
+        <NewProcessDialog />
       </div>
 
-      {/* Cards with summary data */}
+      {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Processos Pendentes</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">
-              +2 desde ontem
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Entregas Hoje</CardTitle>
-            <Truck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">
-              +4 desde ontem
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Despachantes Ativos</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">7</div>
-            <p className="text-xs text-muted-foreground">
-              +1 novo este mês
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Faturamento</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ 12.450</div>
-            <p className="text-xs text-muted-foreground">
-              +19% desde o último mês
-            </p>
-          </CardContent>
-        </Card>
+        <SummaryCard
+          title="Processos Pendentes"
+          value={8}
+          trend="+2 desde ontem"
+          icon={FileText}
+        />
+        <SummaryCard
+          title="Entregas Hoje"
+          value={12}
+          trend="+4 desde ontem"
+          icon={Truck}
+        />
+        <SummaryCard
+          title="Despachantes Ativos"
+          value={7}
+          trend="+1 novo este mês"
+          icon={Users}
+        />
+        <SummaryCard
+          title="Faturamento"
+          value="R$ 12.450"
+          trend="+19% desde o último mês"
+          icon={DollarSign}
+        />
       </div>
 
       {/* Charts */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Processos por Mês</CardTitle>
-            <CardDescription>Volume de processos nos últimos 6 meses</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="aspect-[4/3]">
-              <RechartsPrimitive.BarChart data={barData}>
-                <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
-                <RechartsPrimitive.XAxis dataKey="name" />
-                <RechartsPrimitive.YAxis />
-                <RechartsPrimitive.Tooltip />
-                <RechartsPrimitive.Bar dataKey="processos" fill="var(--color-processos)" />
-              </RechartsPrimitive.BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Tipos de Processo</CardTitle>
-            <CardDescription>Distribuição de processos por tipo</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="aspect-[4/3]">
-              <RechartsPrimitive.PieChart>
-                <RechartsPrimitive.Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({name}) => name}
-                >
-                  {pieData.map((entry, index) => (
-                    <RechartsPrimitive.Cell 
-                      key={`cell-${index}`} 
-                      fill={pieChartData.datasets[0].backgroundColor[index]} 
-                    />
-                  ))}
-                </RechartsPrimitive.Pie>
-                <RechartsPrimitive.Tooltip />
-              </RechartsPrimitive.PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+        <BarChartCard
+          title="Processos por Mês"
+          description="Volume de processos nos últimos 6 meses"
+          data={barData}
+          chartConfig={chartConfig}
+        />
+        <PieChartCard
+          title="Tipos de Processo"
+          description="Distribuição de processos por tipo"
+          data={pieData}
+          colors={pieChartData.datasets[0].backgroundColor as string[]}
+          chartConfig={chartConfig}
+        />
       </div>
       
-      {/* Recent Processes */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Processos Recentes</h3>
-          <Button variant="outline" size="sm" onClick={() => navigate('/processes')}>
-            Ver todos
-          </Button>
-        </div>
-        
-        <Tabs defaultValue="all" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="all">Todos</TabsTrigger>
-            <TabsTrigger value="pending">Pendentes</TabsTrigger>
-            <TabsTrigger value="in_progress">Em Andamento</TabsTrigger>
-            <TabsTrigger value="completed">Concluídos</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {mockProcesses.map((process) => (
-                <ProcessCard key={process.id} {...process} />
-              ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="pending" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {mockProcesses
-                .filter(process => process.status === 'pendente')
-                .map((process) => (
-                  <ProcessCard key={process.id} {...process} />
-                ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="in_progress" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {mockProcesses
-                .filter(process => process.status === 'em_andamento' || process.status === 'aguardando_documentos')
-                .map((process) => (
-                  <ProcessCard key={process.id} {...process} />
-                ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="completed" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {mockProcesses
-                .filter(process => process.status === 'concluido')
-                .map((process) => (
-                  <ProcessCard key={process.id} {...process} />
-                ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+      {/* Processes Tabs */}
+      <ProcessesTabs processes={mockProcesses} />
     </div>
   );
 };
