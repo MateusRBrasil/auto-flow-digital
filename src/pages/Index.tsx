@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import Dashboard from '@/components/Dashboard';
+import Dashboard from '@/pages/Dashboard';
 import ClientRegistration from '@/components/ClientRegistration';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
