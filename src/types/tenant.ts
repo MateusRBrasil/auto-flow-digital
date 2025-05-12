@@ -21,9 +21,26 @@ export interface TenantSettings {
     primary: string;
     secondary?: string;
     accent?: string;
+    background?: string;
+    text?: string;
+    heading?: string;
   };
+  colorPalette?: string; // To store the selected pre-defined color palette
   customCSS?: string;
   publicPageEnabled: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ColorPalette {
+  id: string;
+  name: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    text: string;
+    heading: string;
+  };
 }

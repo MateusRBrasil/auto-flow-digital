@@ -20,7 +20,61 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { TenantSettings as TenantSettingsType } from '@/types/tenant';
+import { ColorPalette, TenantSettings as TenantSettingsType } from '@/types/tenant';
+import { Facebook, Instagram, Linkedin, Twitter, Phone, MapPin, Mail, MessageCircle } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+// Pre-defined color palettes
+const colorPalettes: ColorPalette[] = [
+  {
+    id: 'blue',
+    name: 'Azul Corporativo',
+    colors: {
+      primary: '#1e40af',
+      secondary: '#1d4ed8',
+      accent: '#3b82f6',
+      background: '#f8fafc',
+      text: '#1e293b',
+      heading: '#0f172a'
+    }
+  },
+  {
+    id: 'green',
+    name: 'Verde Natureza',
+    colors: {
+      primary: '#15803d',
+      secondary: '#16a34a',
+      accent: '#22c55e',
+      background: '#f0fdf4',
+      text: '#1e293b',
+      heading: '#14532d'
+    }
+  },
+  {
+    id: 'red',
+    name: 'Vermelho Energia',
+    colors: {
+      primary: '#b91c1c',
+      secondary: '#dc2626',
+      accent: '#ef4444',
+      background: '#fef2f2',
+      text: '#1e293b',
+      heading: '#7f1d1d'
+    }
+  },
+  {
+    id: 'purple',
+    name: 'Roxo Criativo',
+    colors: {
+      primary: '#7e22ce',
+      secondary: '#9333ea',
+      accent: '#a855f7',
+      background: '#faf5ff',
+      text: '#1e293b',
+      heading: '#581c87'
+    }
+  }
+];
 
 // Mock data para o exemplo
 const mockTenantData: TenantSettingsType = {
@@ -43,6 +97,7 @@ const mockTenantData: TenantSettingsType = {
     primary: '#1e40af',
     secondary: '#1d4ed8',
   },
+  colorPalette: 'blue',
   publicPageEnabled: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
@@ -63,13 +118,16 @@ const formSchema = z.object({
   instagram: z.string().url("Digite uma URL válida").optional().or(z.literal('')),
   twitter: z.string().url("Digite uma URL válida").optional().or(z.literal('')),
   linkedin: z.string().url("Digite uma URL válida").optional().or(z.literal('')),
+  colorPalette: z.string(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Digite uma cor hexadecimal válida"),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Digite uma cor hexadecimal válida").optional(),
+  accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Digite uma cor hexadecimal válida").optional(),
   publicPageEnabled: z.boolean().default(false),
 });
 
 const TenantSettings: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedPalette, setSelectedPalette] = useState<string>(mockTenantData.colorPalette || 'blue');
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -87,8 +145,10 @@ const TenantSettings: React.FC = () => {
       instagram: mockTenantData.socialLinks?.instagram || '',
       twitter: mockTenantData.socialLinks?.twitter || '',
       linkedin: mockTenantData.socialLinks?.linkedin || '',
+      colorPalette: mockTenantData.colorPalette || 'blue',
       primaryColor: mockTenantData.colors?.primary || '#1e40af',
       secondaryColor: mockTenantData.colors?.secondary || '#1d4ed8',
+      accentColor: mockTenantData.colors?.accent || '#3b82f6',
       publicPageEnabled: mockTenantData.publicPageEnabled,
     },
   });
@@ -109,6 +169,17 @@ const TenantSettings: React.FC = () => {
         onClick: () => window.open(`/public/${subdomain}`, '_blank')
       }
     });
+  };
+
+  const handlePaletteChange = (paletteId: string) => {
+    setSelectedPalette(paletteId);
+    const palette = colorPalettes.find(p => p.id === paletteId);
+    if (palette) {
+      form.setValue('primaryColor', palette.colors.primary);
+      form.setValue('secondaryColor', palette.colors.secondary);
+      form.setValue('accentColor', palette.colors.accent);
+      form.setValue('colorPalette', paletteId);
+    }
   };
   
   return (
@@ -221,7 +292,50 @@ const TenantSettings: React.FC = () => {
                   
                   <Separator />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Paletas de Cores</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Escolha uma paleta de cores predefinida ou personalize as cores individuais.
+                    </p>
+                    
+                    <FormField
+                      control={form.control}
+                      name="colorPalette"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormControl>
+                            <RadioGroup 
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                handlePaletteChange(value);
+                              }}
+                              defaultValue={field.value}
+                              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                            >
+                              {colorPalettes.map((palette) => (
+                                <div key={palette.id} className={`flex items-center space-x-2 border rounded-lg p-4 ${selectedPalette === palette.id ? 'ring-2 ring-primary' : ''}`}>
+                                  <RadioGroupItem value={palette.id} id={palette.id} />
+                                  <div className="flex flex-col">
+                                    <label htmlFor={palette.id} className="font-medium">{palette.name}</label>
+                                    <div className="flex gap-2 mt-2">
+                                      <div style={{ backgroundColor: palette.colors.primary }} className="w-6 h-6 rounded" />
+                                      <div style={{ backgroundColor: palette.colors.secondary }} className="w-6 h-6 rounded" />
+                                      <div style={{ backgroundColor: palette.colors.accent }} className="w-6 h-6 rounded" />
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="primaryColor"
@@ -267,6 +381,59 @@ const TenantSettings: React.FC = () => {
                         </FormItem>
                       )}
                     />
+                    
+                    <FormField
+                      control={form.control}
+                      name="accentColor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cor de Destaque</FormLabel>
+                          <div className="flex gap-2">
+                            <div 
+                              className="w-10 h-10 rounded-md border"
+                              style={{ backgroundColor: field.value || '#3b82f6' }}
+                            />
+                            <FormControl>
+                              <Input placeholder="#3b82f6" {...field} />
+                            </FormControl>
+                          </div>
+                          <FormDescription>
+                            Utilizada para elementos de destaque e ícones.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="mt-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="text-center space-y-2">
+                      <h4 className="font-medium">Prévia das Cores</h4>
+                      <div className="flex justify-center gap-4">
+                        <Button 
+                          type="button"
+                          style={{ backgroundColor: form.watch('primaryColor'), color: '#ffffff' }}
+                        >
+                          Botão Principal
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          style={{ 
+                            borderColor: form.watch('secondaryColor'),
+                            color: form.watch('secondaryColor')
+                          }}
+                        >
+                          Botão Secundário
+                        </Button>
+                      </div>
+                      <div 
+                        className="mt-2 p-2 rounded-md"
+                        style={{ backgroundColor: form.watch('accentColor'), color: '#ffffff' }}
+                      >
+                        Elemento de Destaque
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -281,7 +448,9 @@ const TenantSettings: React.FC = () => {
                       name="contactPhone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Telefone</FormLabel>
+                          <FormLabel className="flex items-center gap-2">
+                            <Phone className="h-4 w-4" /> Telefone
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="(00) 0000-0000" {...field} />
                           </FormControl>
@@ -298,7 +467,9 @@ const TenantSettings: React.FC = () => {
                       name="contactWhatsApp"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>WhatsApp</FormLabel>
+                          <FormLabel className="flex items-center gap-2">
+                            <MessageCircle className="h-4 w-4" /> WhatsApp
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="5500000000000" {...field} />
                           </FormControl>
@@ -315,7 +486,9 @@ const TenantSettings: React.FC = () => {
                       name="contactEmail"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel className="flex items-center gap-2">
+                            <Mail className="h-4 w-4" /> Email
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="contato@suaempresa.com.br" type="email" {...field} />
                           </FormControl>
@@ -329,7 +502,9 @@ const TenantSettings: React.FC = () => {
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Endereço</FormLabel>
+                          <FormLabel className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4" /> Endereço
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="Rua, número, bairro - Cidade/UF" {...field} />
                           </FormControl>
@@ -341,64 +516,127 @@ const TenantSettings: React.FC = () => {
                   
                   <Separator className="my-4" />
                   
-                  <h3 className="text-lg font-medium mb-4">Redes Sociais</h3>
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Redes Sociais</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="facebook"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Facebook className="h-4 w-4" /> Facebook
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://facebook.com/suaempresa" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="instagram"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Instagram className="h-4 w-4" /> Instagram
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://instagram.com/suaempresa" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="twitter"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Twitter className="h-4 w-4" /> Twitter
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://twitter.com/suaempresa" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="linkedin"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Linkedin className="h-4 w-4" /> LinkedIn
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://linkedin.com/company/suaempresa" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="facebook"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Facebook</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://facebook.com/suaempresa" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="instagram"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Instagram</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://instagram.com/suaempresa" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="twitter"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Twitter</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://twitter.com/suaempresa" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="linkedin"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>LinkedIn</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://linkedin.com/company/suaempresa" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <div className="p-4 border rounded-md bg-muted/20 mt-4">
+                    <h4 className="font-medium mb-2">Prévia do Cartão de Contato</h4>
+                    <div className="bg-background rounded-md p-4 border">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-4 w-4 text-primary" />
+                            <span>{form.watch('contactPhone') || '(11) 99999-8888'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <MessageCircle className="h-4 w-4 text-primary" />
+                            <span>{form.watch('contactPhone') || '(11) 99999-8888'} (WhatsApp)</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="h-4 w-4 text-primary" />
+                            <span>{form.watch('contactEmail') || 'contato@empresa.com.br'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-primary" />
+                            <span>{form.watch('address') || 'Av. Principal, 123 - Centro'}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2 items-center">
+                          {form.watch('facebook') && (
+                            <a href="#" className="p-2 rounded-full hover:bg-muted">
+                              <Facebook className="h-5 w-5" />
+                            </a>
+                          )}
+                          {form.watch('instagram') && (
+                            <a href="#" className="p-2 rounded-full hover:bg-muted">
+                              <Instagram className="h-5 w-5" />
+                            </a>
+                          )}
+                          {form.watch('twitter') && (
+                            <a href="#" className="p-2 rounded-full hover:bg-muted">
+                              <Twitter className="h-5 w-5" />
+                            </a>
+                          )}
+                          {form.watch('linkedin') && (
+                            <a href="#" className="p-2 rounded-full hover:bg-muted">
+                              <Linkedin className="h-5 w-5" />
+                            </a>
+                          )}
+                          {form.watch('contactWhatsApp') && (
+                            <a href="#" className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600">
+                              <MessageCircle className="h-5 w-5" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
