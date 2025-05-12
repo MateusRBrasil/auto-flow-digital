@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useSidebarState } from '@/components/ui/sidebar';
+import { useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 const MainSidebar: React.FC = () => {
-  const { expanded } = useSidebarState();
+  const { expanded } = useSidebar();
 
   return (
     <aside
