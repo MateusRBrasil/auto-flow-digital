@@ -4,12 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
-import { TenantFormValues } from './types';
+import { TenantFormReturn } from './types';
 import ColorPaletteSelector from './ColorPaletteSelector';
 import ColorFormFields from './ColorFormFields';
 
 interface AppearanceTabContentProps {
-  form: UseFormReturn<TenantFormValues>;
+  form: UseFormReturn<TenantFormReturn>;
   selectedPalette: string;
   handlePaletteChange: (paletteId: string) => void;
   logoUrl: string;

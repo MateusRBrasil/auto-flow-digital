@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { formSchema } from './form-schema';
 import { colorPalettes } from './color-palettes';
 import { mockTenantData } from './mock-data';
-import { TenantFormValues } from './types';
+import { TenantFormValues, TenantFormReturn } from './types';
 import ContentTabContent from './ContentTabContent';
 import AppearanceTabContent from './AppearanceTabContent';
 import ContactTabContent from './ContactTabContent';
@@ -21,7 +21,7 @@ const TenantSettingsForm: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedPalette, setSelectedPalette] = useState<string>(mockTenantData.colorPalette || 'blue');
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<TenantFormReturn>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       companyName: mockTenantData.companyName,

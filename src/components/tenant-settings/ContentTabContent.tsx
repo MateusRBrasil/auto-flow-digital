@@ -5,10 +5,10 @@ import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessa
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { UseFormReturn } from 'react-hook-form';
-import { TenantFormValues } from './types';
+import { TenantFormReturn } from './types';
 
 interface ContentTabContentProps {
-  form: UseFormReturn<TenantFormValues>;
+  form: UseFormReturn<TenantFormReturn>;
 }
 
 const ContentTabContent: React.FC<ContentTabContentProps> = ({ form }) => {

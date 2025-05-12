@@ -5,12 +5,12 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { UseFormReturn } from 'react-hook-form';
-import { TenantFormValues } from './types';
+import { TenantFormReturn } from './types';
 import { Phone, MessageCircle, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
 import ContactCard from './ContactCard';
 
 interface ContactTabContentProps {
-  form: UseFormReturn<TenantFormValues>;
+  form: UseFormReturn<TenantFormReturn>;
 }
 
 const ContactTabContent: React.FC<ContactTabContentProps> = ({ form }) => {

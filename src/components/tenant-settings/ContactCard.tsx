@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { UseFormWatch } from 'react-hook-form';
-import { TenantFormValues } from './types';
+import { TenantFormReturn } from './types';
 import { Phone, MessageCircle, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
 
 interface ContactCardProps {
-  watch: UseFormWatch<TenantFormValues>;
+  watch: UseFormWatch<TenantFormReturn>;
 }
 
 const ContactCard: React.FC<ContactCardProps> = ({ watch }) => {

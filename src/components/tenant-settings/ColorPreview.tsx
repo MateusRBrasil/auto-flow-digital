@@ -2,10 +2,10 @@
 import React from 'react';
 import { UseFormWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { TenantFormValues } from './types';
+import { TenantFormReturn } from './types';
 
 interface ColorPreviewProps {
-  watch: UseFormWatch<TenantFormValues>;
+  watch: UseFormWatch<TenantFormReturn>;
 }
 
 const ColorPreview: React.FC<ColorPreviewProps> = ({ watch }) => {

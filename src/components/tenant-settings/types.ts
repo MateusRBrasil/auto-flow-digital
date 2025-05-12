@@ -25,3 +25,15 @@ export interface TenantFormValues {
   accentColor?: string;
   publicPageEnabled: boolean;
 }
+
+// For use with React Hook Form
+export type TenantFormReturn = Partial<TenantFormValues> & {
+  companyName: string;
+  subdomain: string;
+  welcomeTitle: string;
+  welcomeDescription: string;
+  aboutText: string;
+  colorPalette: string;
+  primaryColor: string;
+  publicPageEnabled: boolean;
+};

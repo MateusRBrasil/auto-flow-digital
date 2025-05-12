@@ -4,10 +4,10 @@ import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/f
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { colorPalettes } from './color-palettes';
 import { UseFormReturn } from 'react-hook-form';
-import { TenantFormValues } from './types';
+import { TenantFormReturn } from './types';
 
 interface ColorPaletteSelectorProps {
-  form: UseFormReturn<TenantFormValues>;
+  form: UseFormReturn<TenantFormReturn>;
   selectedPalette: string;
   onPaletteChange: (paletteId: string) => void;
 }

@@ -3,11 +3,11 @@ import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
-import { TenantFormValues } from './types';
+import { TenantFormReturn } from './types';
 import ColorPreview from './ColorPreview';
 
 interface ColorFormFieldsProps {
-  form: UseFormReturn<TenantFormValues>;
+  form: UseFormReturn<TenantFormReturn>;
 }
 
 const ColorFormFields: React.FC<ColorFormFieldsProps> = ({ form }) => {
