@@ -1,99 +1,156 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { useSidebarState } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  Truck,
-  Settings,
-  LogOut,
+import { Separator } from '@/components/ui/separator';
+import { 
+  Home, 
+  FileText, 
+  Users, 
+  Package, 
+  Settings, 
+  Inbox,
+  Box,
+  Layout
 } from 'lucide-react';
 
-import {
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
-
 const MainSidebar: React.FC = () => {
-  const location = useLocation();
-  
-  const menuItems = [
-    {
-      title: "Dashboard",
-      icon: LayoutDashboard,
-      path: "/dashboard",
-    },
-    {
-      title: "Processos",
-      icon: FileText,
-      path: "/processes",
-    },
-    {
-      title: "Clientes",
-      icon: Users,
-      path: "/clients",
-    },
-    {
-      title: "Entregas",
-      icon: Truck,
-      path: "/deliveries",
-    },
-    {
-      title: "Configurações",
-      icon: Settings,
-      path: "/settings",
-    },
-  ];
+  const { expanded } = useSidebarState();
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader className="py-4 flex items-center justify-center">
-        <div className="flex items-center px-2">
-          <h1 className="text-xl font-semibold text-primary">
-            VeícSys
-          </h1>
+    <aside
+      className={cn(
+        'h-screen sticky top-0 flex flex-col border-r bg-background transition-all duration-300 ease-in-out',
+        expanded ? 'w-64 max-w-64' : 'w-16 max-w-16'
+      )}
+    >
+      {/* Logo */}
+      <div className="h-14 flex items-center px-4 py-4 border-b">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
+            <span className="font-bold text-primary-foreground">V</span>
+          </div>
+          {expanded && (
+            <span className="font-semibold text-lg">VeícSys</span>
+          )}
         </div>
-      </SidebarHeader>
-      
-      <SidebarContent>
-        <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                asChild
-                tooltip={item.title}
-                isActive={location.pathname === item.path}
-              >
-                <Link to={item.path}>
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-      
-      <SidebarFooter className="pt-2 mb-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Sair">
-              <Link to="/login">
-                <LogOut className="h-5 w-5" />
-                <span>Sair</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4 px-2">
+        <div className="space-y-1">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-secondary/20 text-secondary-foreground'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            <Home className="h-5 w-5" />
+            {expanded && <span>Dashboard</span>}
+          </NavLink>
+
+          <NavLink
+            to="/processes"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-secondary/20 text-secondary-foreground'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            <FileText className="h-5 w-5" />
+            {expanded && <span>Processos</span>}
+          </NavLink>
+
+          <NavLink
+            to="/clients"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-secondary/20 text-secondary-foreground'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            <Users className="h-5 w-5" />
+            {expanded && <span>Clientes</span>}
+          </NavLink>
+
+          <NavLink
+            to="/deliveries"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-secondary/20 text-secondary-foreground'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            <Package className="h-5 w-5" />
+            {expanded && <span>Entregas</span>}
+          </NavLink>
+
+          <NavLink
+            to="/inventory"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-secondary/20 text-secondary-foreground'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            <Box className="h-5 w-5" />
+            {expanded && <span>Estoque</span>}
+          </NavLink>
+        </div>
+
+        <Separator className="my-4" />
+
+        <div className="space-y-1">
+          <NavLink
+            to="/tenant-settings"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-secondary/20 text-secondary-foreground'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            <Layout className="h-5 w-5" />
+            {expanded && <span>Página Pública</span>}
+          </NavLink>
+
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-secondary/20 text-secondary-foreground'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            <Settings className="h-5 w-5" />
+            {expanded && <span>Configurações</span>}
+          </NavLink>
+        </div>
+      </nav>
+    </aside>
   );
 };
 
