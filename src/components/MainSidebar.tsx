@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 
 const MainSidebar: React.FC = () => {
-  const { expanded } = useSidebar();
+  const { state } = useSidebar();
+  const expanded = state === "expanded";
 
   return (
     <aside
