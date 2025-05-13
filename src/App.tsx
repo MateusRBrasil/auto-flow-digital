@@ -18,41 +18,42 @@ import TenantSettings from "./pages/TenantSettings";
 import PublicHome from "./pages/PublicHome";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
+import { AuthProvider } from "./hooks/use-auth";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/public/:tenantId" element={<PublicHome />} />
-            
-            {/* Protected Routes */}
-            <Route path="/" element={<DashboardLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/processes" element={<Processes />} />
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/deliveries" element={<Deliveries />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/tenant-settings" element={<TenantSettings />} />
-              <Route path="/settings" element={<Settings />} />
-            </Route>
-            
-            {/* Redirect / to /dashboard when authenticated (will be implemented with auth) */}
-            
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/public/:tenantId" element={<PublicHome />} />
+              
+              {/* Protected Routes */}
+              <Route path="/" element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/processes" element={<Processes />} />
+                <Route path="/clients" element={<Clients />} />
+                <Route path="/deliveries" element={<Deliveries />} />
+                <Route path="/inventory" element={<Inventory />} />
+                <Route path="/tenant-settings" element={<TenantSettings />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
+              
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
