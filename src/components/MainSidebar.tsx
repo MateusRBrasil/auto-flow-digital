@@ -68,7 +68,7 @@ const MainSidebar: React.FC = () => {
             }
           >
             <FileText className="h-5 w-5" />
-            {expanded && <span>Processos</span>}
+            {expanded && <span>Pedidos</span>}
           </NavLink>
 
           <NavLink

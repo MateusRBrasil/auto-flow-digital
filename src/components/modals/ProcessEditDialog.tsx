@@ -55,12 +55,12 @@ interface ProcessEditDialogProps {
 
 const processFormSchema = z.object({
   processType: z.string({
-    required_error: "Selecione o tipo de processo",
+    required_error: "Selecione o tipo de pedido",
   }),
   plateNumber: z.string().optional(),
   priority: z.boolean().default(false),
   status: z.enum(['pendente', 'em_andamento', 'concluido', 'cancelado', 'aguardando_documentos'], {
-    required_error: "Selecione o status do processo",
+    required_error: "Selecione o status do pedido",
   }),
   observations: z.string().optional(),
   deliveryAddress: z.string().optional(),
@@ -102,7 +102,7 @@ const ProcessEditDialog: React.FC<ProcessEditDialogProps> = ({
 
   function onSubmit(data: ProcessFormData) {
     onSave(data);
-    toast.success("Processo atualizado com sucesso!");
+    toast.success("Pedido atualizado com sucesso!");
     onOpenChange(false);
   }
 
@@ -112,9 +112,9 @@ const ProcessEditDialog: React.FC<ProcessEditDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Editar Processo {process.id}</DialogTitle>
+          <DialogTitle>Editar Pedido {process.id}</DialogTitle>
           <DialogDescription>
-            Atualize as informações do processo. Clique em salvar quando terminar.
+            Atualize as informações do pedido. Clique em salvar quando terminar.
           </DialogDescription>
         </DialogHeader>
 
@@ -131,11 +131,11 @@ const ProcessEditDialog: React.FC<ProcessEditDialogProps> = ({
                 name="processType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Processo</FormLabel>
+                    <FormLabel>Tipo de Pedido</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo de processo" />
+                          <SelectValue placeholder="Selecione o tipo de pedido" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -203,7 +203,7 @@ const ProcessEditDialog: React.FC<ProcessEditDialogProps> = ({
                     <div className="space-y-1 leading-none">
                       <FormLabel>Prioritário</FormLabel>
                       <FormDescription>
-                        Marque esta opção para destacar este processo como prioritário.
+                        Marque esta opção para destacar este pedido como prioritário.
                       </FormDescription>
                     </div>
                     <FormMessage />
@@ -239,7 +239,7 @@ const ProcessEditDialog: React.FC<ProcessEditDialogProps> = ({
                       <FormLabel>Observações</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Adicione observações importantes sobre este processo"
+                          placeholder="Adicione observações importantes sobre este pedido"
                           className="resize-none"
                           {...field}
                         />

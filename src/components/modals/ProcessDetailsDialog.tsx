@@ -59,11 +59,11 @@ const ProcessDetailsDialog: React.FC<ProcessDetailsDialogProps> = ({
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>Detalhes do Processo {process.id}</span>
+            <span>Detalhes do Pedido {process.id}</span>
             <StatusBadge status={process.status} />
           </DialogTitle>
           <DialogDescription>
-            Visualize todas as informações do processo
+            Visualize todas as informações do pedido
           </DialogDescription>
         </DialogHeader>
 
@@ -82,7 +82,7 @@ const ProcessDetailsDialog: React.FC<ProcessDetailsDialogProps> = ({
             </div>
             
             <div>
-              <h4 className="text-sm font-medium text-muted-foreground">Tipo de Processo</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">Tipo de Pedido</h4>
               <p className="text-base">{process.processType}</p>
             </div>
 
@@ -151,7 +151,7 @@ const ProcessDetailsDialog: React.FC<ProcessDetailsDialogProps> = ({
             </div>
             <div className="text-xs text-muted-foreground mt-1 p-2 bg-muted/30 rounded-md">
               <div className="flex justify-between mb-1">
-                <span>Criação do processo</span>
+                <span>Criação do pedido</span>
                 <span>{formattedDate}</span>
               </div>
               <div className="flex justify-between">
@@ -175,13 +175,13 @@ const ProcessDetailsDialog: React.FC<ProcessDetailsDialogProps> = ({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Esta ação não pode ser desfeita. O processo será removido permanentemente.
+                    Esta ação não pode ser desfeita. O pedido será removido permanentemente.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                   <AlertDialogAction className="bg-destructive hover:bg-destructive/90">
-                    Sim, excluir processo
+                    Sim, excluir pedido
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
