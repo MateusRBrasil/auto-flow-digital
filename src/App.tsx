@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +7,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
+import DashboardAdmin from "./pages/admin/Dashboard"; // ✅ Renomeado para refletir dashboard exclusivo do admin
 import Processes from "./pages/Processes";
 import Clients from "./pages/Clients";
 import Deliveries from "./pages/Deliveries";
@@ -34,10 +33,13 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/public/:tenantId" element={<PublicHome />} />
-            
-            {/* Protected Routes */}
+
+            {/* Admin Dashboard (rota exclusiva) */}
+            <Route path="/admin/dashboard" element={<DashboardAdmin />} />
+
+            {/* Protected Routes com layout padrão */}
             <Route path="/" element={<DashboardLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Processes />} />
               <Route path="/processes" element={<Processes />} />
               <Route path="/clients" element={<Clients />} />
               <Route path="/deliveries" element={<Deliveries />} />
@@ -45,10 +47,8 @@ const App = () => (
               <Route path="/tenant-settings" element={<TenantSettings />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
-            
-            {/* Redirect / to /dashboard when authenticated (will be implemented with auth) */}
-            
-            {/* 404 Route */}
+
+            {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
