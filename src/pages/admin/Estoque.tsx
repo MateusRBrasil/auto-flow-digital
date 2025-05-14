@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -36,12 +35,12 @@ const formSchema = z.object({
   codigo: z.string().min(1, {
     message: "Código é obrigatório.",
   }),
-  preco: z.string().min(1, {
-    message: "Preço é obrigatório.",
-  }).transform(val => Number(val)),
-  quantidade: z.string().min(1, {
-    message: "Quantidade é obrigatória.",
-  }).transform(val => Number(val)),
+  preco: z.coerce.number().min(0, {
+    message: "Preço precisa ser um número positivo.",
+  }),
+  quantidade: z.coerce.number().min(0, {
+    message: "Quantidade precisa ser um número positivo.",
+  }),
 });
 
 const AdminEstoque: React.FC = () => {
@@ -56,8 +55,8 @@ const AdminEstoque: React.FC = () => {
       nome: "",
       descricao: "",
       codigo: "",
-      preco: "",
-      quantidade: "",
+      preco: 0,
+      quantidade: 0,
     },
   });
   
@@ -174,7 +173,13 @@ const AdminEstoque: React.FC = () => {
                       <FormItem>
                         <FormLabel>Preço</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                          <Input 
+                            type="number" 
+                            step="0.01" 
+                            placeholder="0.00" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -188,7 +193,12 @@ const AdminEstoque: React.FC = () => {
                       <FormItem>
                         <FormLabel>Quantidade</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0" {...field} />
+                          <Input 
+                            type="number" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

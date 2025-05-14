@@ -53,7 +53,7 @@ const formSchema = z.object({
   cep: z.string().min(8, {
     message: "CEP inválido.",
   }),
-  desconto: z.string().optional().transform(val => val ? Number(val) : 0),
+  desconto: z.coerce.number().optional().default(0), // Use coerce.number() to convert string to number
   observacoes: z.string().optional(),
 });
 
@@ -72,7 +72,7 @@ const AdminCadastrarCliente: React.FC = () => {
       cidade: "",
       estado: "",
       cep: "",
-      desconto: "",
+      desconto: 0,
       observacoes: "",
     },
   });
@@ -255,7 +255,12 @@ const AdminCadastrarCliente: React.FC = () => {
                     <FormItem>
                       <FormLabel>Desconto Padrão (%)</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
+                        <Input 
+                          type="number" 
+                          placeholder="0" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                        />
                       </FormControl>
                       <FormDescription>
                         Desconto concedido em cada pedido
