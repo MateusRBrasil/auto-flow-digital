@@ -23,7 +23,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   
   // Se houver requisitos específicos de papéis, verificar se o usuário tem o papel necessário
   if (allowedRoles.length > 0) {
-    const userRole = profile?.tipo || 'cliente';
+    const userRole = profile?.tipo || 'avulso';
     
     if (!allowedRoles.includes(userRole)) {
       // Redirecionar para o dashboard apropriado com base no papel
@@ -32,7 +32,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           return <Navigate to="/admin/dashboard" replace />;
         case 'vendedor':
           return <Navigate to="/vendedor/dashboard" replace />;
-        case 'cliente':
+        case 'avulso':
+        case 'despachante':
           return <Navigate to="/cliente/dashboard" replace />;
         default:
           return <Navigate to="/dashboard" replace />;

@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Tables } from "@/integrations/supabase/types";
 
 interface User {
   id: string;
@@ -114,7 +115,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       case 'vendedor':
         navigate('/vendedor/dashboard', { replace: true });
         break;
-      case 'cliente':
+      case 'avulso':
+      case 'despachante':
         navigate('/cliente/dashboard', { replace: true });
         break;
       default:
@@ -160,7 +162,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 case 'vendedor':
                   navigate('/vendedor/dashboard', { replace: true });
                   break;
-                case 'cliente':
+                case 'avulso':
+                case 'despachante':
                   navigate('/cliente/dashboard', { replace: true });
                   break;
                 default:
