@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -112,6 +111,7 @@ const AdminCadastrarVendedor: React.FC = () => {
     }
   };
 
+  
   return (
     <div className="space-y-6">
       <div>

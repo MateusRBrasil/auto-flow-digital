@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { FileText, Truck, Users, DollarSign, Package, ShoppingCart, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -132,7 +131,7 @@ const AdminDashboard: React.FC = () => {
         const { data: customersCount, error: customersError } = await supabase
           .from('perfis')
           .select('id', { count: 'exact' })
-          .eq('tipo', 'cliente');
+          .eq('tipo', 'avulso');
           
         const { data: vendorsCount, error: vendorsError } = await supabase
           .from('perfis')

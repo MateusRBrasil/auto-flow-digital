@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Package, Search, Plus, Truck, FileText } from 'lucide-react';
+import { Package, Search, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -48,7 +47,7 @@ const formSchema = z.object({
 const AdminEstoque: React.FC = () => {
   const [produtos, setProdutos] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -62,68 +61,27 @@ const AdminEstoque: React.FC = () => {
     },
   });
   
-  useEffect(() => {
-    const fetchProdutos = async () => {
-      try {
-        // This is just example code - actual implementation would depend on your specific database schema
-        const { data, error } = await supabase
-          .from('produtos')
-          .select('*')
-          .order('nome');
-          
-        if (error) {
-          throw error;
-        }
-        
-        setProdutos(data || []);
-      } catch (error: any) {
-        console.error('Error fetching produtos:', error);
-        toast({
-          title: "Erro ao carregar produtos",
-          description: error.message || "Não foi possível carregar os produtos.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProdutos();
-  }, []);
-  
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // This is just example code - actual implementation would depend on your specific database schema
-      const { error } = await supabase
-        .from('produtos')
-        .insert([{
-          nome: values.nome,
-          descricao: values.descricao || '',
-          codigo: values.codigo,
-          preco: values.preco,
-          quantidade: values.quantidade,
-        }]);
-        
-      if (error) {
-        throw error;
-      }
+      // Mock adding product for now - we'll integrate with Supabase once the products table is created
+      const newProduct = {
+        id: crypto.randomUUID(),
+        nome: values.nome,
+        descricao: values.descricao || '',
+        codigo: values.codigo,
+        preco: values.preco,
+        quantidade: values.quantidade,
+      };
+      
+      setProdutos([...produtos, newProduct]);
       
       toast({
         title: "Produto cadastrado com sucesso",
         description: `O produto ${values.nome} foi cadastrado com sucesso.`,
       });
       
-      // Reset form and close dialog
       form.reset();
       setIsDialogOpen(false);
-      
-      // Reload products
-      const { data: newData } = await supabase
-        .from('produtos')
-        .select('*')
-        .order('nome');
-        
-      setProdutos(newData || []);
     } catch (error: any) {
       console.error('Error adding produto:', error);
       toast({

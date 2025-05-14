@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from "zod";
@@ -16,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -44,36 +43,14 @@ const Login = () => {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const { data: authData, error } = await signIn(data.email, data.password);
+      const success = await signIn(data.email, data.password);
       
-      if (error) {
-        toast({
-          title: "Erro ao fazer login",
-          description: error.message,
-          variant: "destructive",
-        });
-        console.error("Login error:", error);
-        return;
-      }
-      
-      // Redirect based on user role
-      if (authData?.session) {
+      if (success) {
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo de volta.",
           variant: "default",
         });
-        
-        // Navigate based on profile type
-        const { profile } = authData;
-        
-        if (profile?.tipo === 'admin') {
-          navigate('/admin/dashboard');
-        } else if (profile?.tipo === 'vendedor') {
-          navigate('/dashboard/vendedor');
-        } else {
-          navigate('/dashboard');
-        }
       }
     } catch (error) {
       console.error("Login error:", error);

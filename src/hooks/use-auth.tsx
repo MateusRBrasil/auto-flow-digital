@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -5,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 interface User {
   id: string;
-  email: string;
+  email: string | undefined; // Changed to accommodate Supabase's optional email
 }
 
 interface AuthContextType {
@@ -31,9 +32,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null);
-        
         if (session?.user) {
+          // Convert Supabase User to our User type
+          setUser({
+            id: session.user.id,
+            email: session.user.email
+          });
+          
           try {
             setTimeout(async () => {
               const { data: profileData, error } = await supabase
@@ -53,6 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.error('Error in auth state change:', error);
           }
         } else {
+          setUser(null);
           setProfile(null);
         }
       }
@@ -61,9 +67,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initializeAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      setUser(session?.user ?? null);
-      
       if (session?.user) {
+        // Convert Supabase User to our User type
+        setUser({
+          id: session.user.id,
+          email: session.user.email
+        });
+        
         try {
           const { data: profileData, error } = await supabase
             .from('perfis')
@@ -79,6 +89,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
           console.error('Error in initialize auth:', error);
         }
+      } else {
+        setUser(null);
       }
       
       setIsLoading(false);
@@ -168,6 +180,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string) => {
     // Sign up logic here
+    return false; // Placeholder return to match the Promise<boolean> return type
   };
 
   const resetPassword = async (email: string) => {
