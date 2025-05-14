@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { ThemeProvider } from '@/hooks/use-theme';
 import Header from '@/components/Header';
 
 interface BaseLayoutProps {
@@ -11,21 +9,17 @@ interface BaseLayoutProps {
 
 const BaseLayout: React.FC<BaseLayoutProps> = ({ children, sidebar }) => {
   return (
-    <ThemeProvider>
-      <SidebarProvider>
-        <div className="flex w-full h-screen bg-slate-50 dark:bg-slate-950">
-          {sidebar}
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <Header />
-            <main className="flex-1 overflow-auto">
-              <div className="container mx-auto p-4 sm:p-6 md:p-8">
-                {children}
-              </div>
-            </main>
+    <div className="flex w-full h-screen bg-slate-50 dark:bg-slate-950">
+      {sidebar}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-auto">
+          <div className="container mx-auto p-4 sm:p-6 md:p-8">
+            {children}
           </div>
-        </div>
-      </SidebarProvider>
-    </ThemeProvider>
+        </main>
+      </div>
+    </div>
   );
 };
 

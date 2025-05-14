@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 interface User {
   id: string;
-  email: string | undefined; // Changed to accommodate Supabase's optional email
+  email: string | undefined;
 }
 
 interface AuthContextType {
@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
           
           try {
+            // Use setTimeout to avoid recursive auth state changes
             setTimeout(async () => {
               const { data: profileData, error } = await supabase
                 .from('perfis')
@@ -108,16 +109,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     switch (profile.tipo) {
       case 'admin':
-        navigate('/admin/dashboard');
+        navigate('/admin/dashboard', { replace: true });
         break;
       case 'vendedor':
-        navigate('/vendedor/dashboard');
+        navigate('/vendedor/dashboard', { replace: true });
         break;
       case 'cliente':
-        navigate('/cliente/dashboard');
+        navigate('/cliente/dashboard', { replace: true });
         break;
       default:
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
     }
   };
 
@@ -150,8 +151,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           } else {
             setProfile(profileData);
             
+            // Redirect based on role
             setTimeout(() => {
-              redirectUserBasedOnRole();
+              switch (profileData.tipo) {
+                case 'admin':
+                  navigate('/admin/dashboard', { replace: true });
+                  break;
+                case 'vendedor':
+                  navigate('/vendedor/dashboard', { replace: true });
+                  break;
+                case 'cliente':
+                  navigate('/cliente/dashboard', { replace: true });
+                  break;
+                default:
+                  navigate('/dashboard', { replace: true });
+              }
             }, 100);
           }
         } catch (error) {
@@ -175,7 +189,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const signUp = async (email: string, password: string) => {

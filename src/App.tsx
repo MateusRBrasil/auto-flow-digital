@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -42,7 +42,6 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/use-auth";
-import { SidebarProvider } from "@/components/ui/sidebar";
 
 const queryClient = new QueryClient();
 
@@ -69,7 +68,7 @@ const App = () => {
               
               {/* Protected Routes - Admin */}
               <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
-                <Route index element={<Navigate to="/admin/dashboard" />} />
+                <Route index element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="pedidos" element={<AdminPedidos />} />
                 <Route path="estoque" element={<AdminEstoque />} />
@@ -81,7 +80,7 @@ const App = () => {
               
               {/* Protected Routes - Cliente */}
               <Route path="/cliente" element={<ProtectedRoute allowedRoles={['cliente']}><ClienteLayout /></ProtectedRoute>}>
-                <Route index element={<Navigate to="/cliente/dashboard" />} />
+                <Route index element={<Navigate to="/cliente/dashboard" replace />} />
                 <Route path="dashboard" element={<ClienteDashboard />} />
                 <Route path="pedidos" element={<ClientePedidos />} />
                 <Route path="produtos" element={<ClienteProdutos />} />
@@ -90,7 +89,7 @@ const App = () => {
               
               {/* Protected Routes - Vendedor */}
               <Route path="/vendedor" element={<ProtectedRoute allowedRoles={['vendedor']}><VendedorLayout /></ProtectedRoute>}>
-                <Route index element={<Navigate to="/vendedor/dashboard" />} />
+                <Route index element={<Navigate to="/vendedor/dashboard" replace />} />
                 <Route path="dashboard" element={<VendedorDashboard />} />
                 <Route path="clientes" element={<VendedorClientes />} />
                 <Route path="clientes/cadastrar" element={<VendedorCadastrarCliente />} />
@@ -98,17 +97,10 @@ const App = () => {
                 <Route path="estoque" element={<VendedorEstoque />} />
               </Route>
               
-              {/* Default Dashboard (for backward compatibility) */}
+              {/* Default Dashboard */}
               <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                 <Route index element={<Dashboard />} />
               </Route>
-              
-              {/* Special Routes */}
-              <Route path="/dashboard/vendedor" element={
-                <ProtectedRoute allowedRoles={['vendedor']}>
-                  <Navigate to="/vendedor/dashboard" replace />
-                </ProtectedRoute>
-              } />
               
               {/* Public Home */}
               <Route path="/public/:tenantId" element={<PublicHome />} />

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from "zod";
@@ -65,17 +66,17 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#040714] text-white p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-primary">VeícSys</h1>
-          <p className="text-muted-foreground">Sistema de Gestão para Emplacadoras</p>
+          <h1 className="text-4xl font-bold text-[#65a4fc]">VeícSys</h1>
+          <p className="text-gray-400">Sistema de Gestão para Emplacadoras</p>
         </div>
         
-        <Card>
+        <Card className="bg-[#0c1427] border-gray-800 text-white">
           <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl font-bold">Login</CardTitle>
+            <CardDescription className="text-gray-400">
               Digite suas credenciais para acessar o sistema
             </CardDescription>
           </CardHeader>
@@ -87,11 +88,15 @@ const Login = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className="text-gray-300">Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="exemplo@email.com" {...field} />
+                        <Input 
+                          placeholder="exemplo@email.com" 
+                          {...field} 
+                          className="bg-[#111b32] border-gray-700 text-white placeholder:text-gray-500"
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
@@ -100,29 +105,37 @@ const Login = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Senha</FormLabel>
+                      <FormLabel className="text-gray-300">Senha</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input 
+                          type="password" 
+                          {...field} 
+                          className="bg-[#111b32] border-gray-700 text-white"
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-[#5f9bfb] hover:bg-[#4b89e8] text-white" 
+                  disabled={isLoading}
+                >
                   {isLoading ? "Entrando..." : "Entrar"}
                 </Button>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
-            <div className="text-sm text-center text-muted-foreground">
+            <div className="text-sm text-center text-gray-400">
               Não tem uma conta? {" "}
-              <Link to="/register" className="text-primary hover:underline">
+              <Link to="/register" className="text-[#5f9bfb] hover:underline">
                 Cadastre-se
               </Link>
             </div>
             <div className="text-sm text-center">
-              <Link to="/forgot-password" className="text-muted-foreground hover:text-primary hover:underline">
+              <Link to="/forgot-password" className="text-gray-400 hover:text-[#5f9bfb] hover:underline">
                 Esqueceu sua senha?
               </Link>
             </div>
