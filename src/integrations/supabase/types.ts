@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      clientes: {
+        Row: {
+          cep: string | null
+          cidade: string | null
+          desconto: number | null
+          endereco: string | null
+          estado: string | null
+          id: string
+          observacoes: string | null
+          tipo: string
+        }
+        Insert: {
+          cep?: string | null
+          cidade?: string | null
+          desconto?: number | null
+          endereco?: string | null
+          estado?: string | null
+          id: string
+          observacoes?: string | null
+          tipo: string
+        }
+        Update: {
+          cep?: string | null
+          cidade?: string | null
+          desconto?: number | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string
+          observacoes?: string | null
+          tipo?: string
+        }
+        Relationships: []
+      }
       cnpj_cache: {
         Row: {
           cnpj: string
@@ -27,15 +60,124 @@ export type Database = {
         }
         Relationships: []
       }
+      pedidos: {
+        Row: {
+          cliente_id: string | null
+          created_at: string | null
+          criado_por: string | null
+          id: string
+          placa: string | null
+          status: string | null
+          tipo_servico: string | null
+          valor: number | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          id?: string
+          placa?: string | null
+          status?: string | null
+          tipo_servico?: string | null
+          valor?: number | null
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          id?: string
+          placa?: string | null
+          status?: string | null
+          tipo_servico?: string | null
+          valor?: number | null
+        }
+        Relationships: []
+      }
+      perfis: {
+        Row: {
+          created_at: string | null
+          documento: string | null
+          email: string
+          id: string
+          nome: string
+          telefone: string | null
+          tipo: Database["public"]["Enums"]["profile_tipo"]
+        }
+        Insert: {
+          created_at?: string | null
+          documento?: string | null
+          email: string
+          id: string
+          nome: string
+          telefone?: string | null
+          tipo: Database["public"]["Enums"]["profile_tipo"]
+        }
+        Update: {
+          created_at?: string | null
+          documento?: string | null
+          email?: string
+          id?: string
+          nome?: string
+          telefone?: string | null
+          tipo?: Database["public"]["Enums"]["profile_tipo"]
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      clientes_autorizados: {
+        Row: {
+          cep: string | null
+          cidade: string | null
+          desconto: number | null
+          endereco: string | null
+          estado: string | null
+          id: string | null
+          observacoes: string | null
+          tipo: string | null
+        }
+        Relationships: []
+      }
+      pedidos_com_cliente: {
+        Row: {
+          cidade: string | null
+          cliente_id: string | null
+          created_at: string | null
+          criado_por: string | null
+          endereco: string | null
+          estado: string | null
+          id: string | null
+          placa: string | null
+          status: string | null
+          tipo_cliente: string | null
+          tipo_servico: string | null
+          valor: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      create_test_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      grafico_processos_por_mes: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          mes: string
+          total: number
+        }[]
+      }
+      grafico_tipos_de_servico: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          tipo: string
+          total: number
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      profile_tipo: "admin" | "vendedor" | "avulso" | "despachante"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +292,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      profile_tipo: ["admin", "vendedor", "avulso", "despachante"],
+    },
   },
 } as const
