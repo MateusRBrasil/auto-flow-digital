@@ -69,8 +69,8 @@ const AdminEstoque: React.FC = () => {
         nome: values.nome,
         descricao: values.descricao || '',
         codigo: values.codigo,
-        preco: Number(values.preco),  // Fixed: Explicitly convert to Number
-        quantidade: Number(values.quantidade),  // Fixed: Explicitly convert to Number
+        preco: Number(values.preco),
+        quantidade: Number(values.quantidade),
       };
       
       setProdutos([...produtos, newProduct]);

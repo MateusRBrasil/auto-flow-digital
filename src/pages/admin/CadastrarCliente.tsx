@@ -126,7 +126,7 @@ const AdminCadastrarCliente: React.FC = () => {
         cidade: values.cidade,
         estado: values.estado,
         cep: values.cep,
-        desconto: Number(values.desconto) || 0,  // Fixed: Explicitly convert to Number
+        desconto: Number(values.desconto) || 0,
         observacoes: values.observacoes,
       });
 
