@@ -41,7 +41,7 @@ const formSchema = z.object({
   }).transform(val => parseFloat(val)),
   quantidade: z.string().min(1, {
     message: "Quantidade é obrigatória.",
-  }).transform(val => parseInt(val)),
+  }).transform(val => parseInt(val, 10)),
 });
 
 const AdminEstoque: React.FC = () => {

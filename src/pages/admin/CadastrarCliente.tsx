@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -105,7 +106,7 @@ const AdminCadastrarCliente: React.FC = () => {
         email: values.email,
         telefone: values.telefone,
         documento: values.documento,
-        tipo: "avulso", // Fixed to use a valid enum value
+        tipo: values.tipo, // Use the value from the form
       });
 
       if (profileError) {

@@ -123,6 +123,39 @@ export type Database = {
         }
         Relationships: []
       }
+      produtos: {
+        Row: {
+          codigo: string
+          created_at: string | null
+          descricao: string | null
+          estoque_minimo: number | null
+          id: string
+          nome: string
+          preco: number
+          quantidade: number
+        }
+        Insert: {
+          codigo: string
+          created_at?: string | null
+          descricao?: string | null
+          estoque_minimo?: number | null
+          id?: string
+          nome: string
+          preco: number
+          quantidade: number
+        }
+        Update: {
+          codigo?: string
+          created_at?: string | null
+          descricao?: string | null
+          estoque_minimo?: number | null
+          id?: string
+          nome?: string
+          preco?: number
+          quantidade?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       clientes_autorizados: {

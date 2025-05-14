@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FileText, Truck, Users, DollarSign, Package, ShoppingCart, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -118,22 +119,22 @@ const AdminDashboard: React.FC = () => {
         }
 
         // Calculate summary numbers
-        const { data: pendingCount, error: pendingError } = await supabase
+        const { data: pendingCount, count: pendingTotal, error: pendingError } = await supabase
           .from('pedidos')
           .select('id', { count: 'exact' })
           .not('status', 'eq', 'concluido');
 
-        const { data: completedCount, error: completedError } = await supabase
+        const { data: completedCount, count: completedTotal, error: completedError } = await supabase
           .from('pedidos')
           .select('id', { count: 'exact' })
           .eq('status', 'concluido');
           
-        const { data: customersCount, error: customersError } = await supabase
+        const { data: customersCount, count: customersTotal, error: customersError } = await supabase
           .from('perfis')
           .select('id', { count: 'exact' })
           .eq('tipo', 'avulso');
           
-        const { data: vendorsCount, error: vendorsError } = await supabase
+        const { data: vendorsCount, count: vendorsTotal, error: vendorsError } = await supabase
           .from('perfis')
           .select('id', { count: 'exact' })
           .eq('tipo', 'vendedor');
@@ -148,10 +149,10 @@ const AdminDashboard: React.FC = () => {
         }
           
         setTotals({
-          pendingOrders: pendingCount?.count || 0,
-          completedOrders: completedCount?.count || 0,
-          totalCustomers: customersCount?.count || 0,
-          totalVendors: vendorsCount?.count || 0,
+          pendingOrders: pendingTotal || 0,
+          completedOrders: completedTotal || 0,
+          totalCustomers: customersTotal || 0,
+          totalVendors: vendorsTotal || 0,
           totalSales: totalValue,
         });
 
