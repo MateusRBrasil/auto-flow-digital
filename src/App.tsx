@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -41,6 +42,7 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/use-auth";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const queryClient = new QueryClient();
 
@@ -55,64 +57,66 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Home />} />
-            <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-            <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
-            <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" /> : <ForgotPassword />} />
-            
-            {/* Protected Routes - Admin */}
-            <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
-              <Route index element={<Navigate to="/admin/dashboard" />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="pedidos" element={<AdminPedidos />} />
-              <Route path="estoque" element={<AdminEstoque />} />
-              <Route path="clientes" element={<AdminClientes />} />
-              <Route path="clientes/cadastrar" element={<AdminCadastrarCliente />} />
-              <Route path="vendedores" element={<AdminVendedores />} />
-              <Route path="vendedores/cadastrar" element={<AdminCadastrarVendedor />} />
-            </Route>
-            
-            {/* Protected Routes - Cliente */}
-            <Route path="/cliente" element={<ProtectedRoute allowedRoles={['cliente']}><ClienteLayout /></ProtectedRoute>}>
-              <Route index element={<Navigate to="/cliente/dashboard" />} />
-              <Route path="dashboard" element={<ClienteDashboard />} />
-              <Route path="pedidos" element={<ClientePedidos />} />
-              <Route path="produtos" element={<ClienteProdutos />} />
-              <Route path="suporte" element={<ClienteSuporte />} />
-            </Route>
-            
-            {/* Protected Routes - Vendedor */}
-            <Route path="/vendedor" element={<ProtectedRoute allowedRoles={['vendedor']}><VendedorLayout /></ProtectedRoute>}>
-              <Route index element={<Navigate to="/vendedor/dashboard" />} />
-              <Route path="dashboard" element={<VendedorDashboard />} />
-              <Route path="clientes" element={<VendedorClientes />} />
-              <Route path="clientes/cadastrar" element={<VendedorCadastrarCliente />} />
-              <Route path="vendas" element={<VendedorVendas />} />
-              <Route path="estoque" element={<VendedorEstoque />} />
-            </Route>
-            
-            {/* Default Dashboard (for backward compatibility) */}
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-              <Route index element={<Dashboard />} />
-            </Route>
-            
-            {/* Special Routes */}
-            <Route path="/dashboard/vendedor" element={
-              <ProtectedRoute allowedRoles={['vendedor']}>
-                <Navigate to="/vendedor/dashboard" replace />
-              </ProtectedRoute>
-            } />
-            
-            {/* Public Home */}
-            <Route path="/public/:tenantId" element={<PublicHome />} />
-            
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <SidebarProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Home />} />
+              <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+              <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
+              <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" /> : <ForgotPassword />} />
+              
+              {/* Protected Routes - Admin */}
+              <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
+                <Route index element={<Navigate to="/admin/dashboard" />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="pedidos" element={<AdminPedidos />} />
+                <Route path="estoque" element={<AdminEstoque />} />
+                <Route path="clientes" element={<AdminClientes />} />
+                <Route path="clientes/cadastrar" element={<AdminCadastrarCliente />} />
+                <Route path="vendedores" element={<AdminVendedores />} />
+                <Route path="vendedores/cadastrar" element={<AdminCadastrarVendedor />} />
+              </Route>
+              
+              {/* Protected Routes - Cliente */}
+              <Route path="/cliente" element={<ProtectedRoute allowedRoles={['cliente']}><ClienteLayout /></ProtectedRoute>}>
+                <Route index element={<Navigate to="/cliente/dashboard" />} />
+                <Route path="dashboard" element={<ClienteDashboard />} />
+                <Route path="pedidos" element={<ClientePedidos />} />
+                <Route path="produtos" element={<ClienteProdutos />} />
+                <Route path="suporte" element={<ClienteSuporte />} />
+              </Route>
+              
+              {/* Protected Routes - Vendedor */}
+              <Route path="/vendedor" element={<ProtectedRoute allowedRoles={['vendedor']}><VendedorLayout /></ProtectedRoute>}>
+                <Route index element={<Navigate to="/vendedor/dashboard" />} />
+                <Route path="dashboard" element={<VendedorDashboard />} />
+                <Route path="clientes" element={<VendedorClientes />} />
+                <Route path="clientes/cadastrar" element={<VendedorCadastrarCliente />} />
+                <Route path="vendas" element={<VendedorVendas />} />
+                <Route path="estoque" element={<VendedorEstoque />} />
+              </Route>
+              
+              {/* Default Dashboard (for backward compatibility) */}
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                <Route index element={<Dashboard />} />
+              </Route>
+              
+              {/* Special Routes */}
+              <Route path="/dashboard/vendedor" element={
+                <ProtectedRoute allowedRoles={['vendedor']}>
+                  <Navigate to="/vendedor/dashboard" replace />
+                </ProtectedRoute>
+              } />
+              
+              {/* Public Home */}
+              <Route path="/public/:tenantId" element={<PublicHome />} />
+              
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </SidebarProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

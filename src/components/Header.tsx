@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { 
   Bell, 
   HelpCircle, 
@@ -27,6 +27,16 @@ const Header: React.FC = () => {
   const { theme, setTheme } = useTheme();
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  
+  // Try to safely access the sidebar context
+  let sidebarContext = null;
+  try {
+    sidebarContext = useSidebar();
+  } catch (error) {
+    // The component might be rendered outside of a SidebarProvider
+    // We'll handle this case by not showing the sidebar trigger
+    console.log("Header rendered outside SidebarProvider context");
+  }
 
   const handleLogout = async () => {
     await signOut();
@@ -50,12 +60,13 @@ const Header: React.FC = () => {
     <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
       <div className="px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <div className="flex items-center gap-2">
-          {/* Fix: SidebarTrigger should wrap a single child element */}
-          <SidebarTrigger>
-            <Button variant="ghost" size="icon" className="sm:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SidebarTrigger>
+          {sidebarContext && (
+            <SidebarTrigger>
+              <Button variant="ghost" size="icon" className="sm:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SidebarTrigger>
+          )}
         </div>
         
         <div className="flex items-center space-x-2">
