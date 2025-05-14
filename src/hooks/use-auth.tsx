@@ -11,7 +11,7 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{
     error: AuthError | null;
-    data: { session: Session | null; user: User | null } | null;
+    data: { session: Session | null; user: User | null; profile?: any } | null;
   }>;
   signUp: (email: string, password: string) => Promise<{
     error: AuthError | null;
@@ -102,12 +102,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       const response = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (response.error) {
+        return {
+          error: response.error,
+          data: null
+        };
+      }
+      
+      // If login successful, fetch profile and return with response
+      if (response.data.user) {
+        const { data: profileData } = await supabase
+          .from('perfis')
+          .select('*')
+          .eq('id', response.data.user.id)
+          .single();
+        
+        return {
+          error: null,
+          data: { 
+            ...response.data,
+            profile: profileData
+          }
+        };
+      }
+      
       return {
-        error: response.error,
-        data: response.data ? {
-          user: response.data.user,
-          session: response.data.session
-        } : null
+        error: null,
+        data: response.data
       };
     } catch (error) {
       console.error('Error signing in:', error);

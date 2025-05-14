@@ -6,15 +6,14 @@ import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { 
   LayoutDashboard,
-  ShoppingCart, 
-  Package, 
-  Users, 
-  UserCog,
-  Settings 
+  Users,
+  ShoppingCart,
+  Package,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
-const AdminSidebar: React.FC = () => {
+const VendedorSidebar: React.FC = () => {
   const { state } = useSidebar();
   const { signOut } = useAuth();
   const expanded = state === "expanded";
@@ -42,7 +41,7 @@ const AdminSidebar: React.FC = () => {
       <nav className="flex-1 overflow-y-auto py-4 px-2">
         <div className="space-y-1">
           <NavLink
-            to="/admin/dashboard"
+            to="/vendedor/dashboard"
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
@@ -57,37 +56,7 @@ const AdminSidebar: React.FC = () => {
           </NavLink>
 
           <NavLink
-            to="/admin/pedidos"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <ShoppingCart className="h-5 w-5" />
-            {expanded && <span>Pedidos</span>}
-          </NavLink>
-
-          <NavLink
-            to="/admin/estoque"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <Package className="h-5 w-5" />
-            {expanded && <span>Estoque</span>}
-          </NavLink>
-
-          <NavLink
-            to="/admin/clientes"
+            to="/vendedor/clientes"
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
@@ -102,7 +71,7 @@ const AdminSidebar: React.FC = () => {
           </NavLink>
 
           <NavLink
-            to="/admin/vendedores"
+            to="/vendedor/vendas"
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
@@ -112,13 +81,28 @@ const AdminSidebar: React.FC = () => {
               )
             }
           >
-            <UserCog className="h-5 w-5" />
-            {expanded && <span>Vendedores</span>}
+            <ShoppingCart className="h-5 w-5" />
+            {expanded && <span>Vendas</span>}
+          </NavLink>
+
+          <NavLink
+            to="/vendedor/estoque"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-secondary/20 text-secondary-foreground'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            <Package className="h-5 w-5" />
+            {expanded && <span>Estoque</span>}
           </NavLink>
         </div>
-
+        
         <Separator className="my-4" />
-
+        
         <div className="space-y-1">
           <button
             onClick={() => signOut()}
@@ -136,4 +120,4 @@ const AdminSidebar: React.FC = () => {
   );
 };
 
-export default AdminSidebar;
+export default VendedorSidebar;

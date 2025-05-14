@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -26,6 +28,11 @@ const formSchema = z.object({
 });
 
 const Login = () => {
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,10 +41,50 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log(data);
-    // Implementar lógica de autenticação
-    window.location.href = "/dashboard";
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    try {
+      const { data: authData, error } = await signIn(data.email, data.password);
+      
+      if (error) {
+        toast({
+          title: "Erro ao fazer login",
+          description: error.message,
+          variant: "destructive",
+        });
+        console.error("Login error:", error);
+        return;
+      }
+      
+      // Redirect based on user role
+      if (authData?.session) {
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Bem-vindo de volta.",
+          variant: "default",
+        });
+        
+        // Navigate based on profile type
+        const { profile } = authData;
+        
+        if (profile?.tipo === 'admin') {
+          navigate('/admin/dashboard');
+        } else if (profile?.tipo === 'vendedor') {
+          navigate('/dashboard/vendedor');
+        } else {
+          navigate('/dashboard');
+        }
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Erro ao fazer login",
+        description: "Ocorreu um erro ao tentar fazer login. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -84,14 +131,16 @@ const Login = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">Entrar</Button>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Entrando..." : "Entrar"}
+                </Button>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
             <div className="text-sm text-center text-muted-foreground">
               Não tem uma conta? {" "}
-              <Link to="/signup" className="text-primary hover:underline">
+              <Link to="/register" className="text-primary hover:underline">
                 Cadastre-se
               </Link>
             </div>

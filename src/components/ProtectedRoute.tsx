@@ -11,7 +11,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   allowedRoles = [] 
 }) => {
-  const { user, profile } = useAuth();
+  const { user, profile, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="h-screen w-full flex items-center justify-center">Carregando...</div>;
+  }
   
   if (!user) {
     return <Navigate to="/login" replace />;
