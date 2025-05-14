@@ -1,12 +1,74 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Link } from 'react-router-dom';
 
 const VendedorDashboard: React.FC = () => {
   const { user, profile } = useAuth();
-  
+  const [vendas, setVendas] = useState<any[]>([]);
+  const [totals, setTotals] = useState({
+    totalVendas: 0,
+    totalClientes: 0,
+    totalComissoes: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVendedorData = async () => {
+      if (!user) return;
+
+      setIsLoading(true);
+      try {
+        // Buscar vendas do vendedor
+        const { data: vendasData, error: vendasError } = await supabase
+          .from('pedidos')
+          .select('*,perfis(nome)')
+          .eq('criado_por', user.id)
+          .order('created_at', { ascending: false });
+
+        if (vendasError) {
+          console.error('Erro ao buscar vendas:', vendasError);
+          toast({
+            title: 'Erro',
+            description: 'Não foi possível carregar suas vendas',
+            variant: 'destructive'
+          });
+        } else {
+          setVendas(vendasData || []);
+          
+          // Calcular totais
+          const clientes = new Set(vendasData?.map(venda => venda.cliente_id) || []);
+          const comissoes = vendasData?.reduce((total, venda) => total + (Number(venda.valor) * 0.1), 0) || 0;
+          
+          setTotals({
+            totalVendas: vendasData?.length || 0,
+            totalClientes: clientes.size,
+            totalComissoes: comissoes
+          });
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVendedorData();
+  }, [user]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -18,36 +80,112 @@ const VendedorDashboard: React.FC = () => {
         </div>
         
         <div className="mt-4 md:mt-0">
-          <Button>Nova Venda</Button>
+          <Button asChild>
+            <Link to="/vendedor/vendas/nova">Nova Venda</Link>
+          </Button>
         </div>
       </div>
       
       <Separator />
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-medium mb-2">Suas Vendas</h3>
-          <p className="text-3xl font-bold">0</p>
-          <p className="text-muted-foreground text-sm">Nenhuma venda registrada</p>
-        </div>
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Suas Vendas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{totals.totalVendas}</p>
+            <p className="text-muted-foreground text-sm">
+              {totals.totalVendas > 0 ? 'Total de vendas registradas' : 'Nenhuma venda registrada'}
+            </p>
+          </CardContent>
+        </Card>
         
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-medium mb-2">Clientes Atendidos</h3>
-          <p className="text-3xl font-bold">0</p>
-          <p className="text-muted-foreground text-sm">Nenhum cliente atendido</p>
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Clientes Atendidos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{totals.totalClientes}</p>
+            <p className="text-muted-foreground text-sm">
+              {totals.totalClientes > 0 ? 'Clientes únicos' : 'Nenhum cliente atendido'}
+            </p>
+          </CardContent>
+        </Card>
         
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-medium mb-2">Comissões</h3>
-          <p className="text-3xl font-bold">R$ 0,00</p>
-          <p className="text-muted-foreground text-sm">Nenhuma comissão acumulada</p>
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Comissões</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{formatCurrency(totals.totalComissoes)}</p>
+            <p className="text-muted-foreground text-sm">
+              {totals.totalComissoes > 0 ? '10% sobre vendas' : 'Nenhuma comissão acumulada'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
       
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-medium mb-4">Últimas Vendas</h3>
-        <p className="text-muted-foreground">Você ainda não registrou nenhuma venda</p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Últimas Vendas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-24">
+              Carregando suas vendas...
+            </div>
+          ) : vendas.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Tipo de Serviço</TableHead>
+                  <TableHead>Placa</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {vendas.slice(0, 5).map((venda) => (
+                  <TableRow key={venda.id}>
+                    <TableCell className="font-medium">{venda.id.substring(0, 8)}...</TableCell>
+                    <TableCell>{venda.tipo_servico}</TableCell>
+                    <TableCell>{venda.placa || 'N/A'}</TableCell>
+                    <TableCell>
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs ${
+                        venda.status === 'concluido' 
+                          ? 'bg-green-100 text-green-800' 
+                          : venda.status === 'pendente'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {venda.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">{formatCurrency(venda.valor || 0)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-muted-foreground">Você ainda não registrou nenhuma venda</p>
+              <Button asChild variant="outline" className="mt-4">
+                <Link to="/vendedor/vendas/nova">Criar Primeira Venda</Link>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {totals.totalVendas > 5 && (
+        <div className="flex justify-end">
+          <Button asChild variant="outline">
+            <Link to="/vendedor/vendas">Ver Todas as Vendas</Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

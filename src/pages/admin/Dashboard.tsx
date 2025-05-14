@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Truck, Users, DollarSign, Package, ShoppingCart, AlertCircle } from "lucide-react";
+import { FileText, ShoppingCart, Users, DollarSign, TrendingUp, Package, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import {
   BarChart,
@@ -28,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9966FF', '#FF6B6B'];
 
@@ -35,12 +35,12 @@ interface SummaryCardProps {
   title: string;
   value: string | number;
   description?: string;
-  icon: React.ElementType;
   trend?: string;
   trendUp?: boolean;
+  icon: React.ElementType;
 }
 
-const SummaryCard = ({ title, value, description, icon: Icon, trend, trendUp }: SummaryCardProps) => {
+const SummaryCard = ({ title, value, description, trend, trendUp, icon: Icon }: SummaryCardProps) => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -62,6 +62,50 @@ const SummaryCard = ({ title, value, description, icon: Icon, trend, trendUp }: 
   );
 };
 
+interface PerformanceItemProps {
+  name: string;
+  sales: number;
+  maxSales: number;
+}
+
+const PerformanceItem = ({ name, sales, maxSales }: PerformanceItemProps) => {
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center">
+          <User className="h-4 w-4 mr-2 text-blue-500" />
+          <span>{name}</span>
+        </div>
+        <span className="text-sm">{sales} vendas</span>
+      </div>
+      <Progress value={(sales / maxSales) * 100} className="h-2" />
+    </div>
+  );
+};
+
+interface InventoryItemProps {
+  name: string;
+  quantity: number;
+  low: boolean;
+}
+
+const InventoryItem = ({ name, quantity, low }: InventoryItemProps) => {
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center">
+          <Package className="h-4 w-4 mr-2 text-red-500" />
+          <span>{name}</span>
+        </div>
+        <span className="text-sm text-red-500">{quantity} un.</span>
+      </div>
+      <Progress value={quantity * 20} className="h-2 bg-blue-200">
+        <div className="h-full bg-red-500" style={{ width: `${(quantity/5) * 20}%` }} />
+      </Progress>
+    </div>
+  );
+};
+
 const AdminDashboard: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [salesData, setSalesData] = useState<any[]>([]);
@@ -76,14 +120,30 @@ const AdminDashboard: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // Mock data for performance and inventory
+  const performanceData = [
+    { name: 'Vendedor 1', sales: 25, maxSales: 25 },
+    { name: 'Vendedor 2', sales: 20, maxSales: 25 },
+    { name: 'Vendedor 3', sales: 15, maxSales: 25 },
+    { name: 'Vendedor 4', sales: 10, maxSales: 25 },
+  ];
+
+  const inventoryData = [
+    { name: 'Placas padrão', quantity: 5, low: true },
+    { name: 'Lacres', quantity: 4, low: true },
+    { name: 'Suportes metal', quantity: 3, low: true },
+    { name: 'Adesivos refletivos', quantity: 2, low: true },
+    { name: 'Parafusos especiais', quantity: 1, low: true },
+  ];
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
-        // Fetch recent orders
+        // Fetch recent orders with fixed query that works in Postman
         const { data: orders, error: ordersError } = await supabase
           .from('pedidos')
-          .select('*, perfis(nome)')
+          .select('*,perfis(nome)')
           .order('created_at', { ascending: false })
           .limit(5);
           
@@ -95,6 +155,7 @@ const AdminDashboard: React.FC = () => {
             variant: "destructive"
           });
         } else {
+          console.log("Orders loaded successfully:", orders);
           setRecentOrders(orders || []);
         }
 
@@ -189,109 +250,71 @@ const AdminDashboard: React.FC = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <SummaryCard
-          title="Pedidos Pendentes"
-          value={totals.pendingOrders}
-          description="Aguardando processamento"
-          icon={AlertCircle}
-        />
-        
-        <SummaryCard
-          title="Vendas Concluídas"
-          value={totals.completedOrders}
-          description="Pedidos finalizados"
+          title="Vendas hoje"
+          value={12}
+          description="12 desde ontem"
           icon={ShoppingCart}
         />
         
         <SummaryCard
-          title="Clientes"
-          value={totals.totalCustomers}
-          description="Total de clientes cadastrados"
-          icon={Users}
+          title="Vendas no mês"
+          value={285}
+          trend="+23% comparado ao mês anterior"
+          trendUp={true}
+          icon={TrendingUp}
         />
         
         <SummaryCard
-          title="Faturamento Total"
-          value={formatCurrency(totals.totalSales)}
-          description="Soma de todas as vendas"
+          title="Faturamento"
+          value={formatCurrency(32500.75)}
+          trend="+18% comparado ao mês anterior"
+          trendUp={true}
           icon={DollarSign}
+        />
+        
+        <SummaryCard
+          title="Clientes novos"
+          value={18}
+          description="+5 na última semana"
+          icon={Users}
         />
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales History Chart */}
+        {/* Performance Chart */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Histórico de Vendas</CardTitle>
-            <Select value={salesFilter} onValueChange={setSalesFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Selecione o período" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">Última Semana</SelectItem>
-                <SelectItem value="month">Último Mês</SelectItem>
-                <SelectItem value="year">Último Ano</SelectItem>
-              </SelectContent>
-            </Select>
+          <CardHeader>
+            <CardTitle>Desempenho de vendedores</CardTitle>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="h-[300px]">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-full">Carregando dados...</div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={salesData}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="mes" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [value, "Total de Pedidos"]} />
-                    <Legend />
-                    <Bar dataKey="total" fill="#3b82f6" name="Vendas" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+            <div className="space-y-4">
+              {performanceData.map((item, index) => (
+                <PerformanceItem 
+                  key={index}
+                  name={item.name}
+                  sales={item.sales}
+                  maxSales={item.maxSales}
+                />
+              ))}
             </div>
           </CardContent>
         </Card>
         
-        {/* Service Types Chart */}
+        {/* Inventory Status */}
         <Card>
           <CardHeader>
-            <CardTitle>Tipos de Serviço</CardTitle>
+            <CardTitle>Itens com estoque baixo</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-full">Carregando dados...</div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={serviceTypeData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="total"
-                      nameKey="tipo"
-                    >
-                      {serviceTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name, props) => [value, props.payload.tipo]} />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
+            <div className="space-y-4">
+              {inventoryData.map((item, index) => (
+                <InventoryItem 
+                  key={index}
+                  name={item.name}
+                  quantity={item.quantity}
+                  low={item.low}
+                />
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -311,6 +334,7 @@ const AdminDashboard: React.FC = () => {
                   <TableHead>ID</TableHead>
                   <TableHead>Tipo de Serviço</TableHead>
                   <TableHead>Placa</TableHead>
+                  <TableHead>Criado por</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                 </TableRow>
@@ -321,6 +345,7 @@ const AdminDashboard: React.FC = () => {
                     <TableCell className="font-medium">{order.id.substring(0, 8)}...</TableCell>
                     <TableCell>{order.tipo_servico}</TableCell>
                     <TableCell>{order.placa || 'N/A'}</TableCell>
+                    <TableCell>{order.perfis?.nome || 'N/A'}</TableCell>
                     <TableCell>
                       <span className={`inline-block px-2 py-1 rounded-full text-xs ${
                         order.status === 'concluido' 

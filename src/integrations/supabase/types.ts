@@ -60,6 +60,52 @@ export type Database = {
         }
         Relationships: []
       }
+      pedido_produtos: {
+        Row: {
+          id: string
+          pedido_id: string | null
+          produto_id: string | null
+          quantidade: number
+          valor_unitario: number | null
+        }
+        Insert: {
+          id?: string
+          pedido_id?: string | null
+          produto_id?: string | null
+          quantidade: number
+          valor_unitario?: number | null
+        }
+        Update: {
+          id?: string
+          pedido_id?: string | null
+          produto_id?: string | null
+          quantidade?: number
+          valor_unitario?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedido_produtos_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_produtos_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos_com_cliente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_produtos_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pedidos: {
         Row: {
           cliente_id: string | null
@@ -91,7 +137,29 @@ export type Database = {
           tipo_servico?: string | null
           valor?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_pedidos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pedidos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes_autorizados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pedidos_criado_por"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       perfis: {
         Row: {
@@ -186,7 +254,29 @@ export type Database = {
           tipo_servico: string | null
           valor: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_pedidos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pedidos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes_autorizados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pedidos_criado_por"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
