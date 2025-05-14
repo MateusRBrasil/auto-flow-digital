@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { useSidebar } from '@/components/ui/sidebar';
+import { useSidebar, SidebarProvider } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -15,7 +15,7 @@ import {
   Layout
 } from 'lucide-react';
 
-const MainSidebar: React.FC = () => {
+const SidebarContent: React.FC = () => {
   const { state } = useSidebar();
   const expanded = state === "expanded";
 
@@ -153,6 +153,34 @@ const MainSidebar: React.FC = () => {
       </nav>
     </aside>
   );
+};
+
+// This wrapper component ensures the sidebar is always used with a SidebarProvider
+const MainSidebar: React.FC = () => {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Avoid hydration mismatch by rendering only after component is mounted
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  if (!isMounted) return null;
+  
+  // We need to check if we're already inside a SidebarProvider
+  // Since we can't directly check that, we'll catch the error and render with provider if needed
+  try {
+    // Try to use the hook - this will throw if not in a provider
+    useSidebar();
+    // If we get here, we're already in a provider
+    return <SidebarContent />;
+  } catch (e) {
+    // If we catch an error, we need to provide our own provider
+    return (
+      <SidebarProvider>
+        <SidebarContent />
+      </SidebarProvider>
+    );
+  }
 };
 
 export default MainSidebar;
