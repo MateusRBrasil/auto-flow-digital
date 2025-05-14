@@ -53,7 +53,7 @@ const formSchema = z.object({
   cep: z.string().min(8, {
     message: "CEP inválido.",
   }),
-  desconto: z.string().optional().transform(val => val ? parseFloat(val) : 0),
+  desconto: z.string().optional().transform(val => val ? Number(val) : 0),
   observacoes: z.string().optional(),
 });
 
