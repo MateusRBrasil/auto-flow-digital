@@ -1,6 +1,6 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 // Define the types for our auth context
@@ -10,12 +10,12 @@ interface AuthContextType {
   profile: any | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{
-    error: Error | null;
-    data: Session | null;
+    error: AuthError | null;
+    data: { session: Session | null; user: User | null } | null;
   }>;
   signUp: (email: string, password: string) => Promise<{
-    error: Error | null;
-    data: Session | null;
+    error: AuthError | null;
+    data: { session: Session | null; user: User | null } | null;
   }>;
   signOut: () => Promise<void>;
 }
@@ -81,8 +81,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Function to fetch user profile from our profiles table
   const fetchProfile = async (userId: string) => {
     try {
+      // Fixed table name from "profiles" to "perfis"
       const { data, error } = await supabase
-        .from('profiles')
+        .from('perfis')
         .select('*')
         .eq('id', userId)
         .single();
@@ -100,19 +101,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      return await supabase.auth.signInWithPassword({ email, password });
+      const response = await supabase.auth.signInWithPassword({ email, password });
+      return {
+        error: response.error,
+        data: response.data ? {
+          user: response.data.user,
+          session: response.data.session
+        } : null
+      };
     } catch (error) {
       console.error('Error signing in:', error);
-      return { error: error as Error, data: null };
+      return { 
+        error: error as AuthError, 
+        data: null 
+      };
     }
   };
 
   const signUp = async (email: string, password: string) => {
     try {
-      return await supabase.auth.signUp({ email, password });
+      const response = await supabase.auth.signUp({ email, password });
+      return {
+        error: response.error,
+        data: response.data ? {
+          user: response.data.user,
+          session: response.data.session
+        } : null
+      };
     } catch (error) {
       console.error('Error signing up:', error);
-      return { error: error as Error, data: null };
+      return { 
+        error: error as AuthError, 
+        data: null 
+      };
     }
   };
 
@@ -127,7 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const value = {
+  const value: AuthContextType = {
     session,
     user,
     profile,
