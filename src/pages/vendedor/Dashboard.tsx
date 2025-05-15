@@ -4,10 +4,9 @@ import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from 'react-router-dom';
+import { fetchPedidosByVendedor, formatCurrency } from '@/integrations/supabase/api';
 
 const VendedorDashboard: React.FC = () => {
   const { user, profile } = useAuth();
@@ -25,33 +24,19 @@ const VendedorDashboard: React.FC = () => {
 
       setIsLoading(true);
       try {
-        // Buscar vendas do vendedor
-        const { data: vendasData, error: vendasError } = await supabase
-          .from('pedidos')
-          .select('*,perfis(nome)')
-          .eq('criado_por', user.id)
-          .order('created_at', { ascending: false });
-
-        if (vendasError) {
-          console.error('Erro ao buscar vendas:', vendasError);
-          toast({
-            title: 'Erro',
-            description: 'Não foi possível carregar suas vendas',
-            variant: 'destructive'
-          });
-        } else {
-          setVendas(vendasData || []);
+        // Fetch sales for this vendor
+        const vendasData = await fetchPedidosByVendedor(user.id);
+        setVendas(vendasData || []);
           
-          // Calcular totais
-          const clientes = new Set(vendasData?.map(venda => venda.cliente_id) || []);
-          const comissoes = vendasData?.reduce((total, venda) => total + (Number(venda.valor) * 0.1), 0) || 0;
-          
-          setTotals({
-            totalVendas: vendasData?.length || 0,
-            totalClientes: clientes.size,
-            totalComissoes: comissoes
-          });
-        }
+        // Calculate totals
+        const clientes = new Set(vendasData?.map(venda => venda.cliente_id) || []);
+        const comissoes = vendasData?.reduce((total, venda) => total + (Number(venda.valor) * 0.1), 0) || 0;
+        
+        setTotals({
+          totalVendas: vendasData?.length || 0,
+          totalClientes: clientes.size,
+          totalComissoes: comissoes
+        });
       } catch (error) {
         console.error('Erro:', error);
       } finally {
@@ -61,13 +46,6 @@ const VendedorDashboard: React.FC = () => {
 
     fetchVendedorData();
   }, [user]);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
 
   return (
     <div className="space-y-6">

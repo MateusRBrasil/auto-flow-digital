@@ -2,9 +2,11 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 
+type ProfileTipo = "admin" | "vendedor" | "avulso" | "despachante";
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: string[];
+  allowedRoles?: ProfileTipo[];
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
@@ -21,12 +23,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace />;
   }
   
-  // Se houver requisitos específicos de papéis, verificar se o usuário tem o papel necessário
+  // If there are specific role requirements, check if the user has the necessary role
   if (allowedRoles.length > 0) {
-    const userRole = profile?.tipo || 'avulso';
+    const userRole = profile?.tipo;
     
-    if (!allowedRoles.includes(userRole)) {
-      // Redirecionar para o dashboard apropriado com base no papel
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      // Redirect to the dashboard appropriate for their role
       switch (userRole) {
         case 'admin':
           return <Navigate to="/admin/dashboard" replace />;

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,7 +44,14 @@ import { ThemeProvider } from "./hooks/use-theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/use-auth";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => {
   const { user, isLoading } = useAuth();
@@ -79,7 +87,7 @@ const App = () => {
               </Route>
               
               {/* Protected Routes - Cliente */}
-              <Route path="/cliente" element={<ProtectedRoute allowedRoles={['cliente']}><ClienteLayout /></ProtectedRoute>}>
+              <Route path="/cliente" element={<ProtectedRoute allowedRoles={['avulso', 'despachante']}><ClienteLayout /></ProtectedRoute>}>
                 <Route index element={<Navigate to="/cliente/dashboard" replace />} />
                 <Route path="dashboard" element={<ClienteDashboard />} />
                 <Route path="pedidos" element={<ClientePedidos />} />
@@ -97,8 +105,15 @@ const App = () => {
                 <Route path="estoque" element={<VendedorEstoque />} />
               </Route>
               
-              {/* Default Dashboard */}
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+              {/* Default Dashboard - Redirects based on role */}
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<Dashboard />} />
               </Route>
               

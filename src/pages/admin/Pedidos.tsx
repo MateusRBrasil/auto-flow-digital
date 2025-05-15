@@ -1,11 +1,48 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, PlusCircle } from 'lucide-react';
+import { fetchPedidos, formatCurrency } from '@/integrations/supabase/api';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Link } from 'react-router-dom';
 
 const AdminPedidos: React.FC = () => {
+  const [pedidos, setPedidos] = useState<any[]>([]);
+  const [filteredPedidos, setFilteredPedidos] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPedidos = async () => {
+      setIsLoading(true);
+      const data = await fetchPedidos();
+      setPedidos(data);
+      setFilteredPedidos(data);
+      setIsLoading(false);
+    };
+
+    loadPedidos();
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredPedidos(pedidos);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = pedidos.filter(pedido => 
+      (pedido.id && pedido.id.toLowerCase().includes(query)) ||
+      (pedido.tipo_servico && pedido.tipo_servico.toLowerCase().includes(query)) ||
+      (pedido.placa && pedido.placa.toLowerCase().includes(query)) ||
+      (pedido.perfis?.nome && pedido.perfis.nome.toLowerCase().includes(query))
+    );
+
+    setFilteredPedidos(filtered);
+  }, [searchQuery, pedidos]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -30,13 +67,57 @@ const AdminPedidos: React.FC = () => {
           <Input
             placeholder="Buscar pedidos..."
             className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
       
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-medium mb-4">Lista de Pedidos</h3>
-        <p className="text-muted-foreground">Nenhum pedido registrado</p>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-24">
+            Carregando pedidos...
+          </div>
+        ) : filteredPedidos.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Tipo de Serviço</TableHead>
+                <TableHead>Placa</TableHead>
+                <TableHead>Criado por</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPedidos.map((pedido) => (
+                <TableRow key={pedido.id}>
+                  <TableCell className="font-medium">{pedido.id.substring(0, 8)}...</TableCell>
+                  <TableCell>{pedido.tipo_servico}</TableCell>
+                  <TableCell>{pedido.placa || 'N/A'}</TableCell>
+                  <TableCell>{pedido.perfis?.nome || 'N/A'}</TableCell>
+                  <TableCell>
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs ${
+                      pedido.status === 'concluido' 
+                        ? 'bg-green-100 text-green-800' 
+                        : pedido.status === 'pendente'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {pedido.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">{formatCurrency(pedido.valor || 0)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Nenhum pedido encontrado</p>
+          </div>
+        )}
       </div>
     </div>
   );

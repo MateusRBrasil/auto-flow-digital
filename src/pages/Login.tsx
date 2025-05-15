@@ -1,64 +1,53 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/use-auth';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-
-const formSchema = z.object({
-  email: z.string().email({
-    message: "Digite um email válido.",
-  }),
-  password: z.string().min(6, {
-    message: "A senha deve ter pelo menos 6 caracteres.",
-  }),
-});
+import { useAuth } from '@/hooks/use-auth';
 
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
+    
     try {
-      const success = await signIn(data.email, data.password);
+      const success = await signIn(email, password);
       
       if (success) {
+        // Redirect is handled in the Auth context
+      } else {
         toast({
-          title: "Login realizado com sucesso!",
-          description: "Bem-vindo de volta.",
-          variant: "default",
+          title: "Erro de autenticação",
+          description: "Verifique seu e-mail e senha.",
+          variant: "destructive"
         });
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error('Login error:', error);
       toast({
-        title: "Erro ao fazer login",
-        description: "Ocorreu um erro ao tentar fazer login. Tente novamente.",
-        variant: "destructive",
+        title: "Erro de login",
+        description: "Ocorreu um erro ao tentar entrar.",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -66,82 +55,77 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#040714] text-white p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-[#65a4fc]">VeícSys</h1>
-          <p className="text-gray-400">Sistema de Gestão para Emplacadoras</p>
+    <div className="container flex flex-col items-center justify-center h-screen p-4 space-y-6">
+      <div className="flex flex-col items-center space-y-2 text-center">
+        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+          <span className="font-bold text-xl text-primary-foreground">V</span>
         </div>
-        
-        <Card className="bg-[#0c1427] border-gray-800 text-white">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">Login</CardTitle>
-            <CardDescription className="text-gray-400">
-              Digite suas credenciais para acessar o sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Email</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="exemplo@email.com" 
-                          {...field} 
-                          className="bg-[#111b32] border-gray-700 text-white placeholder:text-gray-500"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Senha</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          {...field} 
-                          className="bg-[#111b32] border-gray-700 text-white"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-                <Button 
-                  type="submit" 
-                  className="w-full bg-[#5f9bfb] hover:bg-[#4b89e8] text-white" 
-                  disabled={isLoading}
+        <h1 className="text-3xl font-bold">VeícSys</h1>
+        <p className="text-muted-foreground max-w-md">
+          Sistema completo para gestão de serviços de emplacamento e despachante veicular
+        </p>
+      </div>
+      
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Entrar</CardTitle>
+          <CardDescription className="text-center">
+            Digite seu e-mail e senha para acessar sua conta
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                placeholder="exemplo@email.com"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Senha</Label>
+                <Link 
+                  to="/forgot-password"
+                  className="text-sm text-primary hover:underline"
                 >
-                  {isLoading ? "Entrando..." : "Entrar"}
-                </Button>
-              </form>
-            </Form>
+                  Esqueceu a senha?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-2">
-            <div className="text-sm text-center text-gray-400">
-              Não tem uma conta? {" "}
-              <Link to="/register" className="text-[#5f9bfb] hover:underline">
+          <CardFooter className="flex flex-col">
+            <Button 
+              className="w-full" 
+              type="submit" 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Entrando...' : 'Entrar'}
+            </Button>
+            <p className="mt-4 text-sm text-center text-muted-foreground">
+              Não tem uma conta?{' '}
+              <Link to="/register" className="text-primary hover:underline">
                 Cadastre-se
               </Link>
-            </div>
-            <div className="text-sm text-center">
-              <Link to="/forgot-password" className="text-gray-400 hover:text-[#5f9bfb] hover:underline">
-                Esqueceu sua senha?
-              </Link>
-            </div>
+            </p>
           </CardFooter>
-        </Card>
-      </div>
+        </form>
+      </Card>
+      
+      <p className="text-sm text-muted-foreground mt-8">
+        &copy; {new Date().getFullYear()} VeícSys. Todos os direitos reservados.
+      </p>
     </div>
   );
 };

@@ -91,13 +91,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "pedido_produtos_pedido_id_fkey"
-            columns: ["pedido_id"]
-            isOneToOne: false
-            referencedRelation: "pedidos_com_cliente"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "pedido_produtos_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
@@ -237,46 +230,27 @@ export type Database = {
           observacoes: string | null
           tipo: string | null
         }
-        Relationships: []
-      }
-      pedidos_com_cliente: {
-        Row: {
-          cidade: string | null
-          cliente_id: string | null
-          created_at: string | null
-          criado_por: string | null
-          endereco: string | null
-          estado: string | null
-          id: string | null
-          placa: string | null
-          status: string | null
-          tipo_cliente: string | null
-          tipo_servico: string | null
-          valor: number | null
+        Insert: {
+          cep?: string | null
+          cidade?: string | null
+          desconto?: number | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string | null
+          observacoes?: string | null
+          tipo?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pedidos_cliente"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pedidos_cliente"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes_autorizados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pedidos_criado_por"
-            columns: ["criado_por"]
-            isOneToOne: false
-            referencedRelation: "perfis"
-            referencedColumns: ["id"]
-          },
-        ]
+        Update: {
+          cep?: string | null
+          cidade?: string | null
+          desconto?: number | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string | null
+          observacoes?: string | null
+          tipo?: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
