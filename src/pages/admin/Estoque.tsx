@@ -3,29 +3,58 @@ import React, { useEffect, useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, PlusCircle, Package, AlertCircle } from 'lucide-react';
-import { supabase } from "@/integrations/supabase/client";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
+import { PlusCircle, Search, FileDown, FileUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { formatCurrency } from '@/integrations/supabase/api';
+import { supabase } from '@/integrations/supabase/client';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
-interface Produto {
-  id: string;
-  nome: string;
-  codigo: string;
-  descricao: string | null;
-  quantidade: number;
-  estoque_minimo: number | null;
-  preco: number;
-  created_at: string | null;
-}
+const formSchema = z.object({
+  nome: z.string().min(2, { message: 'Nome do produto é obrigatório' }),
+  codigo: z.string().min(1, { message: 'Código do produto é obrigatório' }),
+  descricao: z.string().optional(),
+  quantidade: z.number().min(0, { message: 'Quantidade não pode ser negativa' }),
+  preco: z.string().min(1, { message: 'Preço é obrigatório' }),
+  estoque_minimo: z.number().min(1, { message: 'Estoque mínimo deve ser pelo menos 1' }).optional(),
+});
 
 const AdminEstoque: React.FC = () => {
-  const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [filteredProdutos, setFilteredProdutos] = useState<Produto[]>([]);
+  const [produtos, setProdutos] = useState<any[]>([]);
+  const [filteredProdutos, setFilteredProdutos] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      nome: '',
+      codigo: '',
+      descricao: '',
+      quantidade: 0,
+      preco: '',
+      estoque_minimo: 10,
+    }
+  });
 
   useEffect(() => {
     const fetchProdutos = async () => {
@@ -34,20 +63,19 @@ const AdminEstoque: React.FC = () => {
         const { data, error } = await supabase
           .from('produtos')
           .select('*')
-          .order('nome');
-
-        if (error) {
-          throw error;
-        }
-
-        setProdutos(data);
-        setFilteredProdutos(data);
-      } catch (error) {
-        console.error('Error fetching produtos:', error);
+          .order('nome', { ascending: true });
+        
+        if (error) throw error;
+        
+        console.log("Produtos carregados:", data);
+        setProdutos(data || []);
+        setFilteredProdutos(data || []);
+      } catch (error: any) {
+        console.error('Erro ao carregar produtos:', error);
         toast({
-          title: "Erro ao carregar produtos",
-          description: "Não foi possível carregar o estoque.",
-          variant: "destructive"
+          title: 'Erro ao carregar produtos',
+          description: error.message,
+          variant: 'destructive'
         });
       } finally {
         setIsLoading(false);
@@ -73,15 +101,54 @@ const AdminEstoque: React.FC = () => {
     setFilteredProdutos(filtered);
   }, [searchQuery, produtos]);
 
-  const getEstoqueStatus = (quantidade: number, minimo: number | null) => {
-    const min = minimo || 10;
-    if (quantidade <= 0) {
-      return { color: 'bg-red-600', status: 'Esgotado', textColor: 'text-red-800', bgColor: 'bg-red-100' };
-    } else if (quantidade < min) {
-      return { color: 'bg-yellow-600', status: 'Baixo', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' };
-    } else {
-      return { color: 'bg-green-600', status: 'Normal', textColor: 'text-green-800', bgColor: 'bg-green-100' };
+  const handleAddProduct = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('produtos')
+        .insert({
+          nome: values.nome,
+          codigo: values.codigo,
+          descricao: values.descricao || '',
+          quantidade: values.quantidade,
+          preco: parseFloat(values.preco),
+          estoque_minimo: values.estoque_minimo || 10,
+        });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Produto adicionado',
+        description: 'O produto foi adicionado com sucesso.'
+      });
+      
+      // Refresh the list
+      const { data } = await supabase
+        .from('produtos')
+        .select('*')
+        .order('nome', { ascending: true });
+      
+      setProdutos(data || []);
+      setFilteredProdutos(data || []);
+      setIsDialogOpen(false);
+      form.reset();
+    } catch (error: any) {
+      console.error('Erro ao adicionar produto:', error);
+      toast({
+        title: 'Erro ao adicionar produto',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   };
 
   return (
@@ -90,14 +157,133 @@ const AdminEstoque: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Gerenciamento de Estoque</h1>
           <p className="text-muted-foreground">
-            Visualize e gerencie todos os produtos em estoque.
+            Visualize e gerencie todos os produtos disponíveis no sistema.
           </p>
         </div>
         
-        <Button className="sm:self-start">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Novo Produto
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="sm:self-start">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Novo Produto
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Adicionar Produto</DialogTitle>
+              <DialogDescription>
+                Preencha os dados para adicionar um novo produto ao estoque.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleAddProduct)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome do Produto</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome do produto" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="codigo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Código</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Código do produto" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="descricao"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Descrição do produto" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="quantidade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Quantidade</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="0"
+                            placeholder="0" 
+                            {...field}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="estoque_minimo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estoque Mínimo</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="1"
+                            placeholder="10" 
+                            {...field}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 10)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="preco"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preço (R$)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01" 
+                          min="0"
+                          placeholder="0.00" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Salvando...' : 'Salvar Produto'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
       
       <Separator />
@@ -112,6 +298,14 @@ const AdminEstoque: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <Button variant="outline">
+          <FileDown className="mr-2 h-4 w-4" />
+          Exportar
+        </Button>
+        <Button variant="outline">
+          <FileUp className="mr-2 h-4 w-4" />
+          Importar
+        </Button>
       </div>
       
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border">
@@ -123,68 +317,42 @@ const AdminEstoque: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Produto</TableHead>
                 <TableHead>Código</TableHead>
-                <TableHead>Preço</TableHead>
-                <TableHead>Estoque</TableHead>
-                <TableHead>Mínimo</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>Quantidade</TableHead>
+                <TableHead>Estoque Mín.</TableHead>
+                <TableHead className="text-right">Preço</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProdutos.map((produto) => {
-                const { color, status, textColor, bgColor } = getEstoqueStatus(produto.quantidade, produto.estoque_minimo);
-                const minimo = produto.estoque_minimo || 10;
-                const percentual = Math.min(100, Math.max(0, (produto.quantidade / (minimo * 2)) * 100));
-                
-                return (
-                  <TableRow key={produto.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center">
-                        <Package className="h-4 w-4 mr-2 text-blue-500" />
-                        <div>
-                          <div>{produto.nome}</div>
-                          {produto.descricao && (
-                            <div className="text-xs text-muted-foreground">{produto.descricao}</div>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{produto.codigo}</TableCell>
-                    <TableCell>{formatCurrency(produto.preco)}</TableCell>
-                    <TableCell>{produto.quantidade} un.</TableCell>
-                    <TableCell>{minimo} un.</TableCell>
-                    <TableCell>
-                      <div className="space-y-2">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs ${bgColor} ${textColor}`}>
-                          {status}
-                        </span>
-                        <Progress value={percentual} className="h-1.5">
-                          <div className={`h-full ${color}`} style={{ width: `${percentual}%` }} />
-                        </Progress>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {filteredProdutos.map((produto) => (
+                <TableRow key={produto.id} className={
+                  produto.quantidade <= (produto.estoque_minimo || 10) 
+                    ? "bg-red-50 dark:bg-red-900/10" 
+                    : ""
+                }>
+                  <TableCell className="font-medium">{produto.codigo}</TableCell>
+                  <TableCell>{produto.nome}</TableCell>
+                  <TableCell>
+                    <span className={
+                      produto.quantidade <= (produto.estoque_minimo || 10)
+                        ? "text-red-600 dark:text-red-400 font-medium"
+                        : ""
+                    }>
+                      {produto.quantidade}
+                    </span>
+                  </TableCell>
+                  <TableCell>{produto.estoque_minimo || 10}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(produto.preco || 0)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Nenhum produto encontrado</p>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Nenhum produto encontrado.</p>
           </div>
         )}
-      </div>
-      
-      <div className="flex justify-between">
-        <div className="flex items-center text-sm text-muted-foreground">
-          <AlertCircle className="h-4 w-4 mr-2 text-yellow-500" />
-          <span>Produtos com estoque abaixo do mínimo: {produtos.filter(p => p.quantidade < (p.estoque_minimo || 10)).length}</span>
-        </div>
-        
-        <Button variant="outline">
-          Imprimir Relatório de Estoque
-        </Button>
       </div>
     </div>
   );

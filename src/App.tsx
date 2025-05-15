@@ -23,6 +23,7 @@ import AdminClientes from "./pages/admin/Clientes";
 import AdminVendedores from "./pages/admin/Vendedores";
 import AdminCadastrarVendedor from "./pages/admin/CadastrarVendedor";
 import AdminCadastrarCliente from "./pages/admin/CadastrarCliente";
+import CriarPedido from "./pages/admin/CriarPedido";
 
 // Cliente Pages
 import ClienteDashboard from "./pages/cliente/Dashboard";
@@ -100,6 +101,7 @@ const App = () => {
                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="pedidos" element={<AdminPedidos />} />
+                <Route path="pedidos/criar" element={<CriarPedido />} />
                 <Route path="estoque" element={<AdminEstoque />} />
                 <Route path="clientes" element={<AdminClientes />} />
                 <Route path="clientes/cadastrar" element={<AdminCadastrarCliente />} />

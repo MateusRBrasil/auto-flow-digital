@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Search, PlusCircle } from 'lucide-react';
 import { fetchPedidos, formatCurrency } from '@/integrations/supabase/api';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const AdminPedidos: React.FC = () => {
+  const navigate = useNavigate();
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [filteredPedidos, setFilteredPedidos] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,15 +45,9 @@ const AdminPedidos: React.FC = () => {
     setFilteredPedidos(filtered);
   }, [searchQuery, pedidos]);
 
-  // Fallback data if no data is loaded
-  const mockPedidos = [
-    { id: 'ORD-001', tipo_servico: 'Emplacamento', placa: 'ABC1234', perfis: { nome: 'João Silva' }, status: 'pendente', valor: 180 },
-    { id: 'ORD-002', tipo_servico: 'Transferência', placa: 'DEF5678', perfis: { nome: 'Maria Costa' }, status: 'concluido', valor: 220 },
-    { id: 'ORD-003', tipo_servico: '2ª Via', placa: 'GHI9012', perfis: { nome: 'Carlos Souza' }, status: 'pendente', valor: 150 },
-    { id: 'ORD-004', tipo_servico: 'Emplacamento', placa: 'JKL3456', perfis: { nome: 'Ana Pereira' }, status: 'aguardando_documentos', valor: 195 },
-  ];
-
-  const displayedPedidos = filteredPedidos.length > 0 ? filteredPedidos : mockPedidos;
+  const handleCreateOrder = () => {
+    navigate('/admin/pedidos/criar');
+  };
 
   return (
     <div className="space-y-6">
@@ -64,7 +59,7 @@ const AdminPedidos: React.FC = () => {
           </p>
         </div>
         
-        <Button className="sm:self-start">
+        <Button className="sm:self-start" onClick={handleCreateOrder}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Pedido
         </Button>
@@ -89,7 +84,7 @@ const AdminPedidos: React.FC = () => {
           <div className="flex items-center justify-center h-24">
             Carregando pedidos...
           </div>
-        ) : (
+        ) : filteredPedidos.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -102,7 +97,7 @@ const AdminPedidos: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayedPedidos.map((pedido) => (
+              {filteredPedidos.map((pedido) => (
                 <TableRow key={pedido.id}>
                   <TableCell className="font-medium">{typeof pedido.id === 'string' && pedido.id.length > 8 ? pedido.id.substring(0, 8) + '...' : pedido.id}</TableCell>
                   <TableCell>{pedido.tipo_servico || 'N/A'}</TableCell>
@@ -124,6 +119,14 @@ const AdminPedidos: React.FC = () => {
               ))}
             </TableBody>
           </Table>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-muted-foreground mb-4">Nenhum pedido encontrado.</p>
+            <Button onClick={handleCreateOrder} variant="outline">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Criar Primeiro Pedido
+            </Button>
+          </div>
         )}
       </div>
     </div>
