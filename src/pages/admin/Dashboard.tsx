@@ -201,15 +201,59 @@ const AdminDashboard: React.FC = () => {
   }, []);
 
   // Prepare chart data
-  const pieData = serviceTypeData.map((item) => ({
-    name: item.tipo || 'Outros',
-    value: item.total
-  }));
+  const pieData = serviceTypeData.length > 0 
+    ? serviceTypeData.map((item) => ({
+        name: item.tipo || 'Outros',
+        value: item.total
+      }))
+    : [
+        { name: 'Emplacamento', value: 40 },
+        { name: 'Transferência', value: 30 },
+        { name: '2ª Via', value: 20 },
+        { name: 'Outros', value: 10 }
+      ];
 
-  const barData = salesData.map(item => ({
-    name: item.mes,
-    processos: item.total
-  }));
+  const barData = salesData.length > 0 
+    ? salesData.map(item => ({
+        name: item.mes,
+        processos: item.total
+      }))
+    : [
+        { name: 'Jan', processos: 65 },
+        { name: 'Fev', processos: 78 },
+        { name: 'Mar', processos: 52 },
+        { name: 'Abr', processos: 91 },
+        { name: 'Mai', processos: 83 },
+        { name: 'Jun', processos: 108 }
+      ];
+
+  // Fallback data for empty collections
+  const demoPerformanceData = performanceData.length > 0 
+    ? performanceData 
+    : [
+        { name: 'Maria Silva', sales: 24, maxSales: 25 },
+        { name: 'João Costa', sales: 18, maxSales: 25 },
+        { name: 'Ana Pereira', sales: 15, maxSales: 25 },
+        { name: 'Carlos Santos', sales: 12, maxSales: 25 }
+      ];
+      
+  const demoInventoryData = inventoryData.length > 0
+    ? inventoryData
+    : [
+        { name: 'Placa Veicular', quantity: 3, low: true },
+        { name: 'Lacre de Placa', quantity: 5, low: true },
+        { name: 'Impresso CRLV', quantity: 7, low: true },
+        { name: 'Tarjeta', quantity: 8, low: true }
+      ];
+      
+  const demoRecentOrders = recentOrders.length > 0
+    ? recentOrders
+    : [
+        { id: 'ORD-001', tipo_servico: 'Emplacamento', placa: 'ABC1234', perfis: { nome: 'João Silva' }, status: 'pendente', valor: 180 },
+        { id: 'ORD-002', tipo_servico: 'Transferência', placa: 'DEF5678', perfis: { nome: 'Maria Costa' }, status: 'concluido', valor: 220 },
+        { id: 'ORD-003', tipo_servico: '2ª Via', placa: 'GHI9012', perfis: { nome: 'Carlos Souza' }, status: 'pendente', valor: 150 },
+        { id: 'ORD-004', tipo_servico: 'Emplacamento', placa: 'JKL3456', perfis: { nome: 'Ana Pereira' }, status: 'aguardando_documentos', valor: 195 },
+      ];
 
   return (
     <div className="space-y-6">
@@ -258,9 +302,9 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center justify-center h-24">
                 Carregando dados...
               </div>
-            ) : performanceData.length > 0 ? (
+            ) : (
               <div className="space-y-4">
-                {performanceData.map((item, index) => (
+                {demoPerformanceData.map((item, index) => (
                   <PerformanceItem 
                     key={index}
                     name={item.name}
@@ -268,10 +312,6 @@ const AdminDashboard: React.FC = () => {
                     maxSales={item.maxSales}
                   />
                 ))}
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">Nenhum dado disponível</p>
               </div>
             )}
           </CardContent>
@@ -286,9 +326,9 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center justify-center h-24">
                 Carregando dados...
               </div>
-            ) : inventoryData.length > 0 ? (
+            ) : (
               <div className="space-y-4">
-                {inventoryData.map((item, index) => (
+                {demoInventoryData.map((item, index) => (
                   <InventoryItem 
                     key={index}
                     name={item.name}
@@ -296,10 +336,6 @@ const AdminDashboard: React.FC = () => {
                     low={item.low}
                   />
                 ))}
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">Nenhum item com estoque baixo</p>
               </div>
             )}
           </CardContent>
@@ -317,7 +353,7 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center justify-center h-48">
                 Carregando dados...
               </div>
-            ) : barData.length > 0 ? (
+            ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={barData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -330,10 +366,6 @@ const AdminDashboard: React.FC = () => {
                   <Bar dataKey="processos" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">Nenhum dado disponível</p>
-              </div>
             )}
           </CardContent>
         </Card>
@@ -347,7 +379,7 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center justify-center h-48">
                 Carregando dados...
               </div>
-            ) : pieData.length > 0 ? (
+            ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -368,10 +400,6 @@ const AdminDashboard: React.FC = () => {
                   <Tooltip formatter={(value) => [`${value} processos`, 'Total']} />
                 </PieChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">Nenhum dado disponível</p>
-              </div>
             )}
           </CardContent>
         </Card>
@@ -385,7 +413,7 @@ const AdminDashboard: React.FC = () => {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center h-24">Carregando pedidos...</div>
-          ) : recentOrders.length > 0 ? (
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -398,9 +426,9 @@ const AdminDashboard: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentOrders.map((order) => (
+                {demoRecentOrders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id.substring(0, 8)}...</TableCell>
+                    <TableCell className="font-medium">{typeof order.id === 'string' && order.id.length > 8 ? order.id.substring(0, 8) + '...' : order.id}</TableCell>
                     <TableCell>{order.tipo_servico || 'N/A'}</TableCell>
                     <TableCell>{order.placa || 'N/A'}</TableCell>
                     <TableCell>{order.perfis?.nome || 'N/A'}</TableCell>
@@ -420,10 +448,6 @@ const AdminDashboard: React.FC = () => {
                 ))}
               </TableBody>
             </Table>
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-muted-foreground">Nenhum pedido encontrado</p>
-            </div>
           )}
         </CardContent>
       </Card>

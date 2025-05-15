@@ -7,11 +7,12 @@ export const fetchPedidos = async (limit = 100, offset = 0) => {
   try {
     const { data, error } = await supabase
       .from('pedidos')
-      .select('*,perfis(nome)')
+      .select('*, perfis(nome)')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
+    console.log("Pedidos fetched:", data);
     return data || [];
   } catch (error) {
     console.error('Error fetching pedidos:', error);
@@ -28,11 +29,12 @@ export const fetchRecentPedidos = async (limit = 5) => {
   try {
     const { data, error } = await supabase
       .from('pedidos')
-      .select('*,perfis(nome)')
+      .select('*, perfis(nome)')
       .order('created_at', { ascending: false })
       .limit(limit);
 
     if (error) throw error;
+    console.log("Recent pedidos fetched:", data);
     return data || [];
   } catch (error) {
     console.error('Error fetching recent pedidos:', error);
@@ -49,7 +51,7 @@ export const fetchPedidosByVendedor = async (vendedorId: string, limit = 100) =>
   try {
     const { data, error } = await supabase
       .from('pedidos')
-      .select('*,perfis(nome)')
+      .select('*, perfis(nome)')
       .eq('criado_por', vendedorId)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -75,6 +77,7 @@ export const fetchGraficoProcessosPorMes = async () => {
       console.error('Error fetching processos por mes:', error);
       return [];
     }
+    console.log("Gráfico processos por mês:", data);
     return data || [];
   } catch (error) {
     console.error('Error fetching processos por mes:', error);
@@ -89,6 +92,7 @@ export const fetchGraficoTiposDeServico = async () => {
       console.error('Error fetching tipos de servico:', error);
       return [];
     }
+    console.log("Gráfico tipos de serviço:", data);
     return data || [];
   } catch (error) {
     console.error('Error fetching tipos de servico:', error);
