@@ -3,8 +3,6 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Tables } from "@/integrations/supabase/types";
-import { Constants } from "@/integrations/supabase/types";
 
 type ProfileTipo = "admin" | "vendedor" | "avulso" | "despachante";
 
@@ -44,8 +42,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Setup auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (session?.user) {
           // Convert Supabase User to our User type
           setUser({
@@ -53,26 +52,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             email: session.user.email
           });
           
-          // Use setTimeout to avoid recursive auth state changes
-          setTimeout(async () => {
-            try {
-              const { data: profileData, error } = await supabase
-                .from('perfis')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-                
-              if (error) {
-                console.error('Error fetching user profile:', error);
-                setProfile(null);
-              } else {
-                setProfile(profileData as Profile);
-              }
-            } catch (error) {
-              console.error('Error in auth state change:', error);
+          // Fetch user profile after authentication state change
+          try {
+            const { data: profileData, error } = await supabase
+              .from('perfis')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (error) {
+              console.error('Error fetching user profile:', error);
               setProfile(null);
+            } else {
+              setProfile(profileData as Profile);
             }
-          }, 0);
+          } catch (error) {
+            console.error('Error in auth state change:', error);
+            setProfile(null);
+          }
         } else {
           setUser(null);
           setProfile(null);
@@ -80,6 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
+    // Initialize authentication state
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -163,42 +161,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (data.user) {
         // Fetch user profile after successful login
-        setTimeout(async () => {
-          try {
-            const { data: profileData, error: profileError } = await supabase
-              .from('perfis')
-              .select('*')
-              .eq('id', data.user.id)
-              .single();
-              
-            if (profileError) {
-              console.error('Error fetching user profile:', profileError);
-              setProfile(null);
-              navigate('/dashboard', { replace: true });
-            } else {
-              setProfile(profileData as Profile);
-              
-              // Redirect based on role
-              switch (profileData.tipo) {
-                case 'admin':
-                  navigate('/admin/dashboard', { replace: true });
-                  break;
-                case 'vendedor':
-                  navigate('/vendedor/dashboard', { replace: true });
-                  break;
-                case 'avulso':
-                case 'despachante':
-                  navigate('/cliente/dashboard', { replace: true });
-                  break;
-                default:
-                  navigate('/dashboard', { replace: true });
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching profile after login:', error);
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('perfis')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+            
+          if (profileError) {
+            console.error('Error fetching user profile:', profileError);
+            setProfile(null);
             navigate('/dashboard', { replace: true });
+          } else {
+            setProfile(profileData as Profile);
+            
+            // Redirect based on role
+            switch (profileData.tipo) {
+              case 'admin':
+                navigate('/admin/dashboard', { replace: true });
+                break;
+              case 'vendedor':
+                navigate('/vendedor/dashboard', { replace: true });
+                break;
+              case 'avulso':
+              case 'despachante':
+                navigate('/cliente/dashboard', { replace: true });
+                break;
+              default:
+                navigate('/dashboard', { replace: true });
+            }
           }
-        }, 100);
+        } catch (error) {
+          console.error('Error fetching profile after login:', error);
+          navigate('/dashboard', { replace: true });
+        }
         
         return true;
       }

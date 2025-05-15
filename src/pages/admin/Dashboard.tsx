@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { FileText, ShoppingCart, Users, DollarSign, TrendingUp, Package, User } from "lucide-react";
+import { FileText, ShoppingCart, Users, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -19,13 +19,6 @@ import {
 } from "recharts";
 import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Link } from 'react-router-dom';
 import { 
@@ -47,29 +40,18 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9966FF', '#FF6B6B'
 interface SummaryCardProps {
   title: string;
   value: string | number;
-  description?: string;
-  trend?: string;
-  trendUp?: boolean;
   icon: React.ElementType;
 }
 
-const SummaryCard = ({ title, value, description, trend, trendUp, icon: Icon }: SummaryCardProps) => {
+const SummaryCard = ({ title, value, icon: Icon }: SummaryCardProps) => {
   return (
-    <Card>
+    <Card className="bg-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
-        {trend && (
-          <p className={`text-xs ${
-            trendUp ? "text-green-600" : trendUp === false ? "text-red-600" : "text-muted-foreground"
-          }`}>
-            {trend}
-          </p>
-        )}
       </CardContent>
     </Card>
   );
@@ -86,7 +68,7 @@ const PerformanceItem = ({ name, sales, maxSales }: PerformanceItemProps) => {
     <div className="mb-4">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center">
-          <User className="h-4 w-4 mr-2 text-blue-500" />
+          <Users className="h-4 w-4 mr-2 text-blue-500" />
           <span>{name}</span>
         </div>
         <span className="text-sm">{sales} vendas</span>
@@ -107,14 +89,12 @@ const InventoryItem = ({ name, quantity, low }: InventoryItemProps) => {
     <div className="mb-4">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center">
-          <Package className="h-4 w-4 mr-2 text-red-500" />
+          <ShoppingCart className="h-4 w-4 mr-2 text-red-500" />
           <span>{name}</span>
         </div>
         <span className="text-sm text-red-500">{quantity} un.</span>
       </div>
-      <Progress value={(quantity / 10) * 100} className="h-2 bg-blue-200">
-        <div className="h-full bg-red-500" style={{ width: `${(quantity/10) * 100}%` }} />
-      </Progress>
+      <Progress value={(quantity / 10) * 100} className="h-2" />
     </div>
   );
 };
@@ -125,7 +105,6 @@ const AdminDashboard: React.FC = () => {
   const [serviceTypeData, setServiceTypeData] = useState<any[]>([]);
   const [performanceData, setPerformanceData] = useState<any[]>([]);
   const [inventoryData, setInventoryData] = useState<any[]>([]);
-  const [salesFilter, setSalesFilter] = useState('month'); // 'week', 'month', 'year'
   const [totals, setTotals] = useState({
     pendingOrders: 0,
     completedOrders: 0,
@@ -137,9 +116,10 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      console.log("Fetching dashboard data...");
       setIsLoading(true);
       try {
-        // Fetch all data in parallel
+        // Fetch all data in parallel for better performance
         const [
           orders, 
           pendingCount, 
@@ -163,6 +143,11 @@ const AdminDashboard: React.FC = () => {
           fetchTopVendedores(),
           fetchLowStockProducts()
         ]);
+        
+        console.log("Orders:", orders);
+        console.log("Pending Count:", pendingCount);
+        console.log("Graph Data:", graphData);
+        console.log("Type Data:", typeData);
         
         // Set fetched data to state
         setRecentOrders(orders);
@@ -213,29 +198,18 @@ const AdminDashboard: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, [salesFilter]);
+  }, []);
 
-  // Prepare chart data for PieChart
-  const pieData = serviceTypeData.map((item, index) => ({
+  // Prepare chart data
+  const pieData = serviceTypeData.map((item) => ({
     name: item.tipo || 'Outros',
     value: item.total
   }));
 
-  // Format data for BarChart 
   const barData = salesData.map(item => ({
     name: item.mes,
     processos: item.total
   }));
-  
-  const chartConfig = {
-    processos: {
-      label: 'Processos',
-      theme: {
-        light: 'rgba(59, 130, 246, 0.5)',
-        dark: 'rgba(59, 130, 246, 0.7)',
-      },
-    },
-  };
 
   return (
     <div className="space-y-6">
@@ -273,9 +247,8 @@ const AdminDashboard: React.FC = () => {
         />
       </div>
       
-      {/* Charts row */}
+      {/* Second row - Performance and Inventory */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Performance Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Desempenho de vendedores</CardTitle>
@@ -304,7 +277,6 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        {/* Inventory Status */}
         <Card>
           <CardHeader>
             <CardTitle>Itens com estoque baixo</CardTitle>
@@ -334,9 +306,8 @@ const AdminDashboard: React.FC = () => {
         </Card>
       </div>
       
-      {/* Charts row 2 */}
+      {/* Third row - Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bar Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Processos por Mês</CardTitle>
@@ -367,7 +338,6 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        {/* Pie Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Tipos de Processo</CardTitle>
@@ -407,7 +377,7 @@ const AdminDashboard: React.FC = () => {
         </Card>
       </div>
       
-      {/* Pedidos Recentes */}
+      {/* Fourth row - Recent Orders */}
       <Card>
         <CardHeader>
           <CardTitle>Pedidos Recentes</CardTitle>

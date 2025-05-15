@@ -1,96 +1,110 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.26.0";
+// Follow this setup guide to integrate the Deno language server with your editor:
+// https://deno.land/manual/getting_started/setup_your_environment
+// This enables autocomplete, go to definition, etc.
+
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.32.0'
+
+// Cache duration in seconds (24 hours)
+const CACHE_DURATION = 24 * 60 * 60;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
-const SUPABASE_URL = "https://slozxjwnrmiyqiqugcjp.supabase.co";
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
-
-serve(async (req) => {
+serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { cnpj } = await req.json();
-    
+    // Get CNPJ from URL search params
+    const url = new URL(req.url)
+    const cnpj = url.searchParams.get('cnpj')
+
     if (!cnpj) {
       return new Response(
-        JSON.stringify({ error: "CNPJ é obrigatório" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
-      );
+        JSON.stringify({ error: 'CNPJ parameter is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
-    const formattedCnpj = cnpj.replace(/[^0-9]/g, '');
-    
-    if (formattedCnpj.length !== 14) {
+    // Clean up CNPJ (remove special characters)
+    const cleanCnpj = cnpj.replace(/[^\d]/g, '')
+
+    if (cleanCnpj.length !== 14) {
       return new Response(
-        JSON.stringify({ error: "CNPJ deve conter 14 dígitos" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
-      );
+        JSON.stringify({ error: 'CNPJ must have 14 digits' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
-    // Criar cliente Supabase para verificar se já temos o CNPJ em cache
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    
-    // Verificar no cache
-    const { data: cachedData } = await supabase
+    // Create Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+    )
+
+    // Check if we have this CNPJ in cache
+    const { data: cachedData, error: cacheError } = await supabaseClient
       .from('cnpj_cache')
-      .select('data')
-      .eq('cnpj', formattedCnpj)
-      .single();
+      .select('*')
+      .eq('cnpj', cleanCnpj)
+      .single()
 
-    if (cachedData) {
-      console.log("CNPJ encontrado no cache", formattedCnpj);
-      return new Response(
-        JSON.stringify({ ...cachedData.data, from_cache: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!cacheError && cachedData) {
+      // We have cached data
+      const cacheAge = (Date.now() - new Date(cachedData.created_at).getTime()) / 1000
+      
+      if (cacheAge < CACHE_DURATION) {
+        // Cache is valid, return it
+        console.log(`Returning cached data for CNPJ ${cleanCnpj}`)
+        return new Response(
+          JSON.stringify(cachedData.data),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      // Cache is expired, will fetch new data
     }
 
-    // Se não estiver em cache, consultar a API ReceitaWS
-    console.log("Consultando CNPJ na API ReceitaWS:", formattedCnpj);
-    const apiUrl = `https://www.receitaws.com.br/v1/cnpj/${formattedCnpj}`;
-    const response = await fetch(apiUrl);
+    // Fetch data from CNPJ API
+    console.log(`Fetching data from API for CNPJ ${cleanCnpj}`)
+    const apiUrl = `https://receitaws.com.br/v1/cnpj/${cleanCnpj}`
     
-    if (!response.ok) {
-      return new Response(
-        JSON.stringify({ error: `Erro ao consultar CNPJ: ${response.statusText}` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: response.status }
-      );
-    }
-
-    const cnpjData = await response.json();
+    const apiResponse = await fetch(apiUrl)
     
-    // Verificar se o resultado é válido
-    if (cnpjData.status === "ERROR") {
-      return new Response(
-        JSON.stringify({ error: cnpjData.message }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
-      );
+    if (!apiResponse.ok) {
+      throw new Error(`Failed to fetch CNPJ data: ${apiResponse.statusText}`)
     }
+    
+    const data = await apiResponse.json()
 
-    // Salvar no cache
-    await supabase.from('cnpj_cache').insert({
-      cnpj: formattedCnpj,
-      data: cnpjData
-    });
+    // Store in cache
+    if (data.status !== 'ERROR') {
+      await supabaseClient
+        .from('cnpj_cache')
+        .upsert(
+          { 
+            cnpj: cleanCnpj, 
+            data 
+          },
+          { onConflict: 'cnpj' }
+        )
+    }
 
     return new Response(
-      JSON.stringify(cnpjData),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-
+      JSON.stringify(data),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   } catch (error) {
-    console.error("Erro na função consulta-cnpj:", error);
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
-    );
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    )
   }
-});
+})

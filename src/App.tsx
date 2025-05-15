@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useEffect } from "react";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -43,18 +44,39 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/use-auth";
+import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: 2,
       refetchOnWindowFocus: false,
+      staleTime: 60000, // 1 minute
     },
   },
 });
 
 const App = () => {
   const { user, isLoading } = useAuth();
+  
+  useEffect(() => {
+    // Log auth state for debugging
+    const logAuthState = async () => {
+      const { data } = await supabase.auth.getSession();
+      console.log("Current auth session:", data);
+    };
+    
+    logAuthState();
+    
+    // Setup auth listener
+    const { data: { subscription }} = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session ? "User present" : "No user");
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
   
   if (isLoading) {
     return <div className="h-screen w-full flex items-center justify-center">Carregando...</div>;

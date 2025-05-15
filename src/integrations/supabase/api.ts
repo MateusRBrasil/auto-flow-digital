@@ -71,7 +71,10 @@ export const fetchPedidosByVendedor = async (vendedorId: string, limit = 100) =>
 export const fetchGraficoProcessosPorMes = async () => {
   try {
     const { data, error } = await supabase.rpc('grafico_processos_por_mes');
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching processos por mes:', error);
+      return [];
+    }
     return data || [];
   } catch (error) {
     console.error('Error fetching processos por mes:', error);
@@ -82,7 +85,10 @@ export const fetchGraficoProcessosPorMes = async () => {
 export const fetchGraficoTiposDeServico = async () => {
   try {
     const { data, error } = await supabase.rpc('grafico_tipos_de_servico');
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching tipos de servico:', error);
+      return [];
+    }
     return data || [];
   } catch (error) {
     console.error('Error fetching tipos de servico:', error);
@@ -95,10 +101,13 @@ export const fetchPendingOrdersCount = async () => {
   try {
     const { count, error } = await supabase
       .from('pedidos')
-      .select('id', { count: 'exact' })
-      .not('status', 'eq', 'concluido');
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pendente');
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching pending orders count:', error);
+      return 0;
+    }
     return count || 0;
   } catch (error) {
     console.error('Error fetching pending orders count:', error);
@@ -110,10 +119,13 @@ export const fetchCompletedOrdersCount = async () => {
   try {
     const { count, error } = await supabase
       .from('pedidos')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .eq('status', 'concluido');
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching completed orders count:', error);
+      return 0;
+    }
     return count || 0;
   } catch (error) {
     console.error('Error fetching completed orders count:', error);
@@ -127,7 +139,10 @@ export const fetchTotalSales = async () => {
       .from('pedidos')
       .select('valor');
       
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching total sales:', error);
+      return 0;
+    }
 
     if (!data || data.length === 0) return 0;
     
@@ -143,10 +158,13 @@ export const fetchClientsCount = async () => {
   try {
     const { count, error } = await supabase
       .from('perfis')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .in('tipo', ['avulso', 'despachante']);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching clients count:', error);
+      return 0;
+    }
     return count || 0;
   } catch (error) {
     console.error('Error fetching clients count:', error);
@@ -158,10 +176,13 @@ export const fetchVendorsCount = async () => {
   try {
     const { count, error } = await supabase
       .from('perfis')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .eq('tipo', 'vendedor');
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching vendors count:', error);
+      return 0;
+    }
     return count || 0;
   } catch (error) {
     console.error('Error fetching vendors count:', error);
@@ -177,7 +198,10 @@ export const fetchTopVendedores = async (limit = 5) => {
       .eq('tipo', 'vendedor')
       .limit(limit);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching top vendedores:', error);
+      return [];
+    }
     
     if (!data || data.length === 0) return [];
     
@@ -186,7 +210,7 @@ export const fetchTopVendedores = async (limit = 5) => {
       data.map(async (vendedor) => {
         const { count } = await supabase
           .from('pedidos')
-          .select('id', { count: 'exact' })
+          .select('id', { count: 'exact', head: true })
           .eq('criado_por', vendedor.id);
         
         return {
@@ -215,7 +239,10 @@ export const fetchLowStockProducts = async (limit = 5) => {
       .order('quantidade', { ascending: true })
       .limit(limit);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching low stock products:', error);
+      return [];
+    }
     return data || [];
   } catch (error) {
     console.error('Error fetching low stock products:', error);
