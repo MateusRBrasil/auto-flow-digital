@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -46,12 +45,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/use-auth";
 import { supabase } from "./integrations/supabase/client";
 
+// Create a new QueryClient with optimized settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
-      refetchOnWindowFocus: false,
+      retry: 1, // Reduced retry attempts
+      refetchOnWindowFocus: false, 
       staleTime: 60000, // 1 minute
+      cacheTime: 300000, // 5 minutes
     },
   },
 });
@@ -67,19 +68,16 @@ const App = () => {
     };
     
     logAuthState();
-    
-    // Setup auth listener
-    const { data: { subscription }} = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session ? "User present" : "No user");
-    });
-    
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
-  
+
+  // Simple app-level loading indicator
   if (isLoading) {
-    return <div className="h-screen w-full flex items-center justify-center">Carregando...</div>;
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center">
+        <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+        <p className="mt-4 text-lg">Iniciando aplicação...</p>
+      </div>
+    );
   }
 
   return (
@@ -92,9 +90,9 @@ const App = () => {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Home />} />
-              <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-              <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
-              <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" /> : <ForgotPassword />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               
               {/* Protected Routes - Admin */}
               <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
@@ -142,7 +140,7 @@ const App = () => {
               {/* Public Home */}
               <Route path="/public/:tenantId" element={<PublicHome />} />
               
-              {/* 404 Route */}
+              {/* Fallback routes */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </SidebarProvider>

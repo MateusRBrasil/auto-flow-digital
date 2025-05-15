@@ -42,9 +42,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Setup auth state listener
+    // Set up auth state listener FIRST to avoid race conditions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.info("Auth state changed:", event, session ? "User present" : "No user");
+        
         if (session?.user) {
           // Convert Supabase User to our User type
           setUser({
@@ -52,24 +54,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             email: session.user.email
           });
           
-          // Fetch user profile after authentication state change
-          try {
-            const { data: profileData, error } = await supabase
-              .from('perfis')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            if (error) {
-              console.error('Error fetching user profile:', error);
+          // Use setTimeout to avoid blocking the auth state change
+          // This prevents recursion and race conditions
+          setTimeout(async () => {
+            try {
+              const { data: profileData, error } = await supabase
+                .from('perfis')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+                
+              if (error) {
+                console.error('Error fetching user profile:', error);
+                setProfile(null);
+              } else {
+                setProfile(profileData as Profile);
+              }
+            } catch (error) {
+              console.error('Error in profile fetch:', error);
               setProfile(null);
-            } else {
-              setProfile(profileData as Profile);
             }
-          } catch (error) {
-            console.error('Error in auth state change:', error);
-            setProfile(null);
-          }
+          }, 0);
         } else {
           setUser(null);
           setProfile(null);
@@ -77,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Initialize authentication state
+    // THEN check for existing session
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -160,42 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       if (data.user) {
-        // Fetch user profile after successful login
-        try {
-          const { data: profileData, error: profileError } = await supabase
-            .from('perfis')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-            
-          if (profileError) {
-            console.error('Error fetching user profile:', profileError);
-            setProfile(null);
-            navigate('/dashboard', { replace: true });
-          } else {
-            setProfile(profileData as Profile);
-            
-            // Redirect based on role
-            switch (profileData.tipo) {
-              case 'admin':
-                navigate('/admin/dashboard', { replace: true });
-                break;
-              case 'vendedor':
-                navigate('/vendedor/dashboard', { replace: true });
-                break;
-              case 'avulso':
-              case 'despachante':
-                navigate('/cliente/dashboard', { replace: true });
-                break;
-              default:
-                navigate('/dashboard', { replace: true });
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching profile after login:', error);
-          navigate('/dashboard', { replace: true });
-        }
-        
+        // Success is handled by the auth state change listener
         return true;
       }
       
@@ -214,8 +184,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      setUser(null);
-      setProfile(null);
+      // Auth state change listener will handle the rest
       navigate('/login', { replace: true });
     } catch (error) {
       console.error('Error signing out:', error);

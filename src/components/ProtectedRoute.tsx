@@ -24,10 +24,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [user, profile, isLoading, allowedRoles]);
   
+  // Show a simple loading indicator while checking auth
   if (isLoading) {
-    return <div className="h-screen w-full flex items-center justify-center">Carregando...</div>;
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center">
+        <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+        <p className="mt-4 text-lg">Carregando...</p>
+      </div>
+    );
   }
   
+  // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" replace />;
   }

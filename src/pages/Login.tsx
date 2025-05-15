@@ -16,11 +16,15 @@ const Login = () => {
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
+  // Redirect if already logged in - with delayed check to avoid redirect loop
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard', { replace: true });
-    }
+    const timer = setTimeout(() => {
+      if (user) {
+        navigate('/dashboard', { replace: true });
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +64,7 @@ const Login = () => {
   };
 
   return (
-    <div className="container flex flex-col items-center justify-center h-screen p-4 space-y-6">
+    <div className="container flex flex-col items-center justify-center min-h-screen p-4 space-y-6">
       <div className="flex flex-col items-center space-y-2 text-center">
         <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
           <span className="font-bold text-xl text-primary-foreground">V</span>
