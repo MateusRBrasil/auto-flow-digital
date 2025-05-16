@@ -9,9 +9,9 @@ import AdminLayout from "./layouts/AdminLayout";
 import VendedorLayout from "./layouts/VendedorLayout";
 import ClienteLayout from "./layouts/ClienteLayout";
 import Home from "./pages/Home";
-import Login from "./pages/auth/Login"; // Updated path
-import Signup from "./pages/auth/Register"; // Updated path
-import ForgotPassword from "./pages/auth/ForgotPassword"; // Updated path
+import Login from "./pages/auth/Login"; 
+import Signup from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useEffect } from "react";
 
@@ -43,7 +43,7 @@ import Dashboard from "./pages/Dashboard";
 import PublicHome from "./pages/PublicHome";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
-import ProtectedRoute from "./components/auth/ProtectedRoute"; // Updated path
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { useAuth } from "./hooks/use-auth";
 import { supabase } from "./integrations/supabase/client";
 
@@ -60,13 +60,14 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, profile } = useAuth();
   
   useEffect(() => {
     // Log auth state for debugging
     const logAuthState = async () => {
       const { data } = await supabase.auth.getSession();
       console.log("Current auth session:", data);
+      console.log("Current user profile:", profile);
     };
     
     logAuthState();
@@ -77,7 +78,7 @@ const App = () => {
     return () => {
       clearInterval(checkInterval);
     };
-  }, []);
+  }, [profile]);
 
   // Simple app-level loading indicator
   if (isLoading) {
@@ -140,12 +141,24 @@ const App = () => {
                 path="/dashboard" 
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout />
+                    {/* This dynamically redirects based on user role */}
+                    {user && profile ? (
+                      profile.tipo === 'admin' ? (
+                        <Navigate to="/admin/dashboard" replace />
+                      ) : profile.tipo === 'vendedor' ? (
+                        <Navigate to="/vendedor/dashboard" replace />
+                      ) : ['avulso', 'despachante'].includes(profile.tipo) ? (
+                        <Navigate to="/cliente/dashboard" replace />
+                      ) : <DashboardLayout />
+                    ) : <DashboardLayout />}
                   </ProtectedRoute>
                 }
               >
                 <Route index element={<Dashboard />} />
               </Route>
+              
+              {/* Remove this incorrect route and add a proper 404 handler */}
+              <Route path="/processes" element={<Navigate to="/cliente/pedidos" replace />} />
               
               {/* Public Home */}
               <Route path="/public/:tenantId" element={<PublicHome />} />
