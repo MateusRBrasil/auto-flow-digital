@@ -5,52 +5,17 @@ import NewProcessDialog from '@/components/dashboard/NewProcessDialog';
 import BarChartCard from '@/components/dashboard/BarChartCard';
 import PieChartCard from '@/components/dashboard/PieChartCard';
 import ProcessesTabs from '@/components/dashboard/ProcessesTabs';
-import { fetchRecentPedidos, fetchPendingOrdersCount, fetchCompletedOrdersCount, fetchClientsCount, fetchTotalSales, fetchGraficoProcessosPorMes, fetchGraficoTiposDeServico } from '@/integrations/supabase/api';
+import { 
+  fetchRecentPedidos, 
+  fetchPendingOrdersCount, 
+  fetchCompletedOrdersCount, 
+  fetchClientsCount, 
+  fetchTotalSales, 
+  fetchGraficoProcessosPorMes, 
+  fetchGraficoTiposDeServico 
+} from '@/integrations/supabase/api';
 import { useAuth } from '@/hooks/use-auth';
-
-// Sample data for the dashboard
-const mockProcesses = [
-  {
-    id: "PROC-001",
-    clientName: "João Silva",
-    clientType: "avulso" as const,
-    processType: "Emplacamento",
-    plateNumber: "ABC-1234",
-    priority: false,
-    status: "em_andamento" as const,
-    createdAt: "2023-05-10T10:00:00Z"
-  },
-  {
-    id: "PROC-002",
-    clientName: "Despachante Rápido LTDA",
-    clientType: "despachante" as const,
-    processType: "Transferência",
-    plateNumber: "DEF-5678",
-    priority: true,
-    status: "aguardando_documentos" as const,
-    createdAt: "2023-05-09T15:30:00Z"
-  },
-  {
-    id: "PROC-003",
-    clientName: "Maria Santos",
-    clientType: "avulso" as const,
-    processType: "2ª Via de Placa",
-    plateNumber: "GHI-9012",
-    priority: false,
-    status: "pendente" as const,
-    createdAt: "2023-05-08T09:15:00Z"
-  },
-  {
-    id: "PROC-004",
-    clientName: "Auto Despachos S.A.",
-    clientType: "despachante" as const,
-    processType: "Emplacamento",
-    plateNumber: "JKL-3456",
-    priority: true,
-    status: "concluido" as const,
-    createdAt: "2023-05-07T14:45:00Z"
-  }
-];
+import { toast } from '@/hooks/use-toast';
 
 const Dashboard: React.FC = () => {
   const { user, profile } = useAuth();
@@ -79,7 +44,15 @@ const Dashboard: React.FC = () => {
           fetchGraficoTiposDeServico()
         ]);
 
-        console.log("Dashboard data loaded:", { pedidos, pendingCount, completedCount, clientsCount, sales, monthlyData, typeData });
+        console.log("Dashboard data loaded:", { 
+          pedidos, 
+          pendingCount, 
+          completedCount, 
+          clientsCount, 
+          sales, 
+          monthlyData, 
+          typeData 
+        });
         
         // Format data for the dashboard
         const formattedProcesses = pedidos.map(p => ({
@@ -111,8 +84,13 @@ const Dashboard: React.FC = () => {
         setBarData(formattedBarData);
         setPieData(formattedPieData);
         setProcesses(formattedProcesses);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error loading dashboard data:", error);
+        toast({
+          title: "Erro ao carregar dados",
+          description: error.message || "Não foi possível carregar dados do dashboard.",
+          variant: "destructive"
+        });
         // Keep default mock data on error
       } finally {
         setIsLoading(false);

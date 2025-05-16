@@ -8,30 +8,26 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 
-const Login = () => {
+const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { signIn, user } = useAuth();
+  const { signUp, user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in - with improved check to avoid redirect loop
+  // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      // Add a short delay to avoid immediate redirects that could cause loops
-      const timer = setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 300);
-      
-      return () => clearTimeout(timer);
+      navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -40,23 +36,28 @@ const Login = () => {
       return;
     }
     
+    if (password !== confirmPassword) {
+      toast({
+        title: "Senhas não coincidem",
+        description: "A senha e a confirmação devem ser iguais.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      const success = await signIn(email, password);
+      const success = await signUp(email, password);
       
-      if (!success) {
-        toast({
-          title: "Erro de autenticação",
-          description: "Verifique seu e-mail e senha.",
-          variant: "destructive"
-        });
+      if (success) {
+        navigate('/login', { replace: true });
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Registration error:', error);
       toast({
-        title: "Erro de login",
-        description: "Ocorreu um erro ao tentar entrar.",
+        title: "Erro ao cadastrar",
+        description: "Ocorreu um erro ao tentar criar sua conta.",
         variant: "destructive"
       });
     } finally {
@@ -78,9 +79,9 @@ const Login = () => {
       
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Entrar</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Cadastre-se</CardTitle>
           <CardDescription className="text-center">
-            Digite seu e-mail e senha para acessar sua conta
+            Crie uma conta para acessar o sistema
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -97,20 +98,22 @@ const Login = () => {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
-                <Link 
-                  to="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Esqueceu a senha?
-                </Link>
-              </div>
+              <Label htmlFor="password">Senha</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar senha</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
@@ -121,12 +124,12 @@ const Login = () => {
               type="submit" 
               disabled={isLoading}
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? 'Cadastrando...' : 'Cadastrar'}
             </Button>
             <p className="mt-4 text-sm text-center text-muted-foreground">
-              Não tem uma conta?{' '}
-              <Link to="/register" className="text-primary hover:underline">
-                Cadastre-se
+              Já tem uma conta?{' '}
+              <Link to="/login" className="text-primary hover:underline">
+                Entrar
               </Link>
             </p>
           </CardFooter>
@@ -140,4 +143,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

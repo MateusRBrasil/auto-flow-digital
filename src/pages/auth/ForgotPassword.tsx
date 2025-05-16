@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,33 +8,20 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 
-const Login = () => {
+const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
-  const { signIn, user } = useAuth();
-  const navigate = useNavigate();
-
-  // Redirect if already logged in - with improved check to avoid redirect loop
-  useEffect(() => {
-    if (user) {
-      // Add a short delay to avoid immediate redirects that could cause loops
-      const timer = setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 300);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [user, navigate]);
+  const { resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!email) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos.",
+        title: "E-mail obrigatório",
+        description: "Por favor, informe seu e-mail.",
         variant: "destructive"
       });
       return;
@@ -43,26 +30,47 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const success = await signIn(email, password);
-      
-      if (!success) {
-        toast({
-          title: "Erro de autenticação",
-          description: "Verifique seu e-mail e senha.",
-          variant: "destructive"
-        });
-      }
+      await resetPassword(email);
+      setIsSubmitted(true);
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Reset password error:', error);
       toast({
-        title: "Erro de login",
-        description: "Ocorreu um erro ao tentar entrar.",
+        title: "Erro ao redefinir senha",
+        description: "Ocorreu um erro ao solicitar a redefinição de senha.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="container flex flex-col items-center justify-center min-h-screen p-4 space-y-6">
+        <div className="flex flex-col items-center space-y-2 text-center">
+          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+            <span className="font-bold text-xl text-primary-foreground">V</span>
+          </div>
+          <h1 className="text-3xl font-bold">VeícSys</h1>
+        </div>
+        
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">E-mail enviado</CardTitle>
+            <CardDescription className="text-center">
+              Enviamos um link para redefinir sua senha para {email}.
+              Verifique sua caixa de entrada.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex justify-center">
+            <Button asChild variant="outline">
+              <Link to="/login">Voltar para o login</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container flex flex-col items-center justify-center min-h-screen p-4 space-y-6">
@@ -78,9 +86,9 @@ const Login = () => {
       
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Entrar</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Esqueceu sua senha?</CardTitle>
           <CardDescription className="text-center">
-            Digite seu e-mail e senha para acessar sua conta
+            Informe seu e-mail para receber um link de redefinição
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -96,24 +104,6 @@ const Login = () => {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
-                <Link 
-                  to="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Esqueceu a senha?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
           </CardContent>
           <CardFooter className="flex flex-col">
             <Button 
@@ -121,23 +111,19 @@ const Login = () => {
               type="submit" 
               disabled={isLoading}
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? 'Enviando...' : 'Enviar link de redefinição'}
             </Button>
             <p className="mt-4 text-sm text-center text-muted-foreground">
-              Não tem uma conta?{' '}
-              <Link to="/register" className="text-primary hover:underline">
-                Cadastre-se
+              Lembrou sua senha?{' '}
+              <Link to="/login" className="text-primary hover:underline">
+                Voltar para o login
               </Link>
             </p>
           </CardFooter>
         </form>
       </Card>
-      
-      <p className="text-sm text-muted-foreground mt-8">
-        &copy; {new Date().getFullYear()} VeícSys. Todos os direitos reservados.
-      </p>
     </div>
   );
 };
 
-export default Login;
+export default ForgotPassword;

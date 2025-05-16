@@ -9,9 +9,9 @@ import AdminLayout from "./layouts/AdminLayout";
 import VendedorLayout from "./layouts/VendedorLayout";
 import ClienteLayout from "./layouts/ClienteLayout";
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Signup from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
+import Login from "./pages/auth/Login"; // Updated path
+import Signup from "./pages/auth/Register"; // Updated path
+import ForgotPassword from "./pages/auth/ForgotPassword"; // Updated path
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useEffect } from "react";
 
@@ -43,7 +43,7 @@ import Dashboard from "./pages/Dashboard";
 import PublicHome from "./pages/PublicHome";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute"; // Updated path
 import { useAuth } from "./hooks/use-auth";
 import { supabase } from "./integrations/supabase/client";
 
@@ -70,6 +70,13 @@ const App = () => {
     };
     
     logAuthState();
+    
+    // Set up interval to periodically check auth state
+    const checkInterval = setInterval(logAuthState, 60000); // Check every minute
+    
+    return () => {
+      clearInterval(checkInterval);
+    };
   }, []);
 
   // Simple app-level loading indicator
