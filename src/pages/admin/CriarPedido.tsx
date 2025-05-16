@@ -42,7 +42,7 @@ const CriarPedido: React.FC = () => {
     defaultValues: {
       tipo_servico: '',
       placa: '',
-      cliente_id: '',
+      cliente_id: undefined,
       valor: '',
     }
   });
@@ -179,7 +179,7 @@ const CriarPedido: React.FC = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Cliente Avulso</SelectItem>
+                      <SelectItem value="cliente_avulso">Cliente Avulso</SelectItem>
                       {clientes.map((cliente) => (
                         <SelectItem key={cliente.id} value={cliente.id}>
                           {cliente.nome}
