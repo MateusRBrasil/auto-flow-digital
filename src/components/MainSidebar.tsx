@@ -1,158 +1,121 @@
 
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { useSidebar } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Home, 
-  FileText, 
-  Users, 
-  Package, 
-  Settings, 
-  Inbox,
-  Box,
-  Layout
-} from 'lucide-react';
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarFooter,
+  SidebarGroupLabel,
+} from "@/components/ui/sidebar";
+import { useNavigate } from "react-router-dom";
+import { LogOut, Settings } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
-const MainSidebar: React.FC = () => {
-  const { state } = useSidebar();
-  const expanded = state === "expanded";
+export default function MainSidebar() {
+  const navigate = useNavigate();
+  const { signOut, profile } = useAuth();
+
+  const initials = profile?.nome
+    ? profile.nome.split(' ')
+        .map((name) => name[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+    : "U";
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
-    <aside
-      className={cn(
-        'h-screen sticky top-0 flex flex-col border-r bg-background transition-all duration-300 ease-in-out',
-        expanded ? 'w-64 max-w-64' : 'w-16 max-w-16'
-      )}
-    >
-      {/* Logo */}
-      <div className="h-14 flex items-center px-4 py-4 border-b">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-            <span className="font-bold text-primary-foreground">V</span>
+    <Sidebar>
+      <SidebarHeader className="border-b p-4">
+        <div className="flex items-center space-x-2">
+          <div className="bg-primary rounded-md h-8 w-8 flex items-center justify-center text-primary-foreground font-semibold">
+            V
           </div>
-          {expanded && (
-            <span className="font-semibold text-lg">VeícSys</span>
-          )}
+          <span className="text-lg font-semibold">VeicSys</span>
         </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2">
-        <div className="space-y-1">
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <Home className="h-5 w-5" />
-            {expanded && <span>Dashboard</span>}
-          </NavLink>
-
-          <NavLink
-            to="/processes"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <FileText className="h-5 w-5" />
-            {expanded && <span>Pedidos</span>}
-          </NavLink>
-
-          <NavLink
-            to="/clients"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <Users className="h-5 w-5" />
-            {expanded && <span>Clientes</span>}
-          </NavLink>
-
-          <NavLink
-            to="/deliveries"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <Package className="h-5 w-5" />
-            {expanded && <span>Entregas</span>}
-          </NavLink>
-
-          <NavLink
-            to="/inventory"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <Box className="h-5 w-5" />
-            {expanded && <span>Estoque</span>}
-          </NavLink>
-        </div>
-
-        <Separator className="my-4" />
-
-        <div className="space-y-1">
-          <NavLink
-            to="/tenant-settings"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <Layout className="h-5 w-5" />
-            {expanded && <span>Página Pública</span>}
-          </NavLink>
-
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                isActive
-                  ? 'bg-secondary/20 text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              )
-            }
-          >
-            <Settings className="h-5 w-5" />
-            {expanded && <span>Configurações</span>}
-          </NavLink>
-        </div>
-      </nav>
-    </aside>
+      </SidebarHeader>
+      
+      <SidebarContent>
+        {/* Main menu content will be different for each user type */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <button>Dashboard</button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      
+      <SidebarFooter>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => navigate('/settings')}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Configurações</span>
+                  </Button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                  </Button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+            
+            <div className="mt-4 px-2 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Avatar>
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-0.5 text-sm">
+                    <p className="font-medium">{profile?.nome}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {profile?.tipo === 'admin' ? 'Administrador' : 
+                      profile?.tipo === 'vendedor' ? 'Vendedor' : 
+                      profile?.tipo === 'fisica' ? 'Pessoa Física' : 
+                      profile?.tipo === 'juridica' ? 'Pessoa Jurídica' : ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarFooter>
+    </Sidebar>
   );
-};
-
-export default MainSidebar;
+}

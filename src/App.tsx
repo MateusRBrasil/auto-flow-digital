@@ -24,6 +24,7 @@ import AdminVendedores from "./pages/admin/Vendedores";
 import AdminCadastrarVendedor from "./pages/admin/CadastrarVendedor";
 import AdminCadastrarCliente from "./pages/admin/CadastrarCliente";
 import CriarPedido from "./pages/admin/CriarPedido";
+import Servicos from "./pages/admin/Servicos";
 
 // Cliente Pages
 import ClienteDashboard from "./pages/cliente/Dashboard";
@@ -111,6 +112,7 @@ const App = () => {
                 <Route path="pedidos" element={<AdminPedidos />} />
                 <Route path="pedidos/criar" element={<CriarPedido />} />
                 <Route path="estoque" element={<AdminEstoque />} />
+                <Route path="servicos" element={<Servicos />} />
                 <Route path="clientes" element={<AdminClientes />} />
                 <Route path="clientes/cadastrar" element={<AdminCadastrarCliente />} />
                 <Route path="vendedores" element={<AdminVendedores />} />
@@ -118,7 +120,7 @@ const App = () => {
               </Route>
               
               {/* Protected Routes - Cliente */}
-              <Route path="/cliente" element={<ProtectedRoute allowedRoles={['avulso', 'despachante']}><ClienteLayout /></ProtectedRoute>}>
+              <Route path="/cliente" element={<ProtectedRoute allowedRoles={['fisica', 'juridica']}><ClienteLayout /></ProtectedRoute>}>
                 <Route index element={<Navigate to="/cliente/dashboard" replace />} />
                 <Route path="dashboard" element={<ClienteDashboard />} />
                 <Route path="pedidos" element={<ClientePedidos />} />
@@ -147,7 +149,7 @@ const App = () => {
                         <Navigate to="/admin/dashboard" replace />
                       ) : profile.tipo === 'vendedor' ? (
                         <Navigate to="/vendedor/dashboard" replace />
-                      ) : ['avulso', 'despachante'].includes(profile.tipo) ? (
+                      ) : ['fisica', 'juridica'].includes(profile.tipo) ? (
                         <Navigate to="/cliente/dashboard" replace />
                       ) : <DashboardLayout />
                     ) : <DashboardLayout />}
@@ -157,7 +159,7 @@ const App = () => {
                 <Route index element={<Dashboard />} />
               </Route>
               
-              {/* Remove this incorrect route and add a proper 404 handler */}
+              {/* Redirect legacy routes */}
               <Route path="/processes" element={<Navigate to="/cliente/pedidos" replace />} />
               
               {/* Public Home */}

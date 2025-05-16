@@ -26,43 +26,97 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
-  tipo_servico: z.string().min(2, { message: 'Escolha um tipo de serviço' }),
+  tipo_servico: z.string().min(1, { message: 'Escolha um tipo de serviço' }),
   placa: z.string().min(1, { message: 'Informe a placa do veículo' }),
-  cliente_id: z.string().optional(),
+  cliente_id: z.string().min(1, { message: 'Selecione um cliente' }),
   valor: z.string().min(1, { message: 'Informe o valor' }),
+  tipo_veiculo: z.string().min(1, { message: 'Selecione o tipo de veículo' }),
 });
+
+interface Cliente {
+  id: string;
+  nome: string;
+  tipo: string; // "fisica" ou "juridica"
+}
+
+interface Servico {
+  id: string;
+  nome: string;
+  valor_base: number;
+  item_estoque?: string;
+  quantidade_consumo?: number;
+}
 
 const CriarPedido: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [clientes, setClientes] = useState<any[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [servicos, setServicos] = useState<Servico[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      tipo_servico: '',
+      tipo_servico: undefined,
       placa: '',
       cliente_id: undefined,
       valor: '',
+      tipo_veiculo: undefined,
     }
   });
 
+  // Watch for service changes to update the price
+  const selectedServico = form.watch('tipo_servico');
+  
+  // Update price when service changes
   useEffect(() => {
-    const fetchClientes = async () => {
-      const { data, error } = await supabase
-        .from('perfis')
-        .select('id, nome')
-        .in('tipo', ['avulso', 'despachante']);
-      
-      if (error) {
-        console.error('Erro ao buscar clientes:', error);
-        return;
+    if (selectedServico) {
+      const servico = servicos.find(s => s.id === selectedServico);
+      if (servico) {
+        form.setValue('valor', servico.valor_base.toString());
       }
-      
-      setClientes(data || []);
+    }
+  }, [selectedServico, servicos, form]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch clients
+        const { data: clientesData, error: clientesError } = await supabase
+          .from('perfis')
+          .select('id, nome, tipo')
+          .in('tipo', ['fisica', 'juridica']);
+        
+        if (clientesError) {
+          console.error('Erro ao buscar clientes:', clientesError);
+          throw clientesError;
+        }
+        
+        // Fetch services
+        const { data: servicosData, error: servicosError } = await supabase
+          .from('servicos')
+          .select('*');
+          
+        if (servicosError) {
+          console.error('Erro ao buscar serviços:', servicosError);
+          throw servicosError;
+        }
+        
+        console.log('Clientes carregados:', clientesData);
+        console.log('Serviços carregados:', servicosData);
+        
+        setClientes(clientesData || []);
+        setServicos(servicosData || []);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        toast({
+          title: 'Erro ao carregar dados',
+          description: 'Não foi possível carregar os dados necessários.',
+          variant: 'destructive'
+        });
+      }
     };
 
-    fetchClientes();
+    fetchData();
   }, []);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -70,16 +124,19 @@ const CriarPedido: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase
-        .from('pedidos')
-        .insert({
-          tipo_servico: values.tipo_servico,
-          placa: values.placa,
-          cliente_id: values.cliente_id || null,
-          valor: parseFloat(values.valor),
-          status: 'pendente',
-          criado_por: (await supabase.auth.getUser()).data.user?.id || null,
-        });
+      // Check if there's inventory to be deducted
+      const selectedService = servicos.find(s => s.id === values.tipo_servico);
+      
+      // Start a transaction
+      const { data, error } = await supabase.rpc('criar_pedido', {
+        p_tipo_servico: selectedService?.nome || values.tipo_servico,
+        p_placa: values.placa,
+        p_cliente_id: values.cliente_id === 'cliente_avulso' ? null : values.cliente_id,
+        p_valor: parseFloat(values.valor),
+        p_criado_por: (await supabase.auth.getUser()).data.user?.id || null,
+        p_tipo_veiculo: values.tipo_veiculo,
+        p_servico_id: selectedService?.id || null
+      });
       
       if (error) throw error;
       
@@ -123,7 +180,7 @@ const CriarPedido: React.FC = () => {
                   <FormLabel>Tipo de Serviço</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
-                    defaultValue={field.value}
+                    value={field.value}
                     disabled={isLoading}
                   >
                     <FormControl>
@@ -132,11 +189,21 @@ const CriarPedido: React.FC = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Emplacamento">Emplacamento</SelectItem>
-                      <SelectItem value="Transferência">Transferência</SelectItem>
-                      <SelectItem value="2ª Via">2ª Via</SelectItem>
-                      <SelectItem value="Licenciamento">Licenciamento</SelectItem>
-                      <SelectItem value="Outro">Outro</SelectItem>
+                      {servicos.length > 0 ? (
+                        servicos.map(servico => (
+                          <SelectItem key={servico.id} value={servico.id}>
+                            {servico.nome}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="Emplacamento">Emplacamento</SelectItem>
+                          <SelectItem value="Transferência">Transferência</SelectItem>
+                          <SelectItem value="2ª Via">2ª Via</SelectItem>
+                          <SelectItem value="Licenciamento">Licenciamento</SelectItem>
+                          <SelectItem value="Outro">Outro</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -164,13 +231,41 @@ const CriarPedido: React.FC = () => {
             
             <FormField
               control={form.control}
+              name="tipo_veiculo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Veículo</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={isLoading}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo de veículo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="carro">Carro</SelectItem>
+                      <SelectItem value="moto">Moto</SelectItem>
+                      <SelectItem value="caminhao">Caminhão</SelectItem>
+                      <SelectItem value="outro">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
               name="cliente_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Cliente</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
-                    defaultValue={field.value}
+                    value={field.value}
                     disabled={isLoading}
                   >
                     <FormControl>
@@ -182,7 +277,7 @@ const CriarPedido: React.FC = () => {
                       <SelectItem value="cliente_avulso">Cliente Avulso</SelectItem>
                       {clientes.map((cliente) => (
                         <SelectItem key={cliente.id} value={cliente.id}>
-                          {cliente.nome}
+                          {cliente.nome} ({cliente.tipo === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica'})
                         </SelectItem>
                       ))}
                     </SelectContent>

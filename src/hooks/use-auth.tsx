@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
-type ProfileTipo = "admin" | "vendedor" | "avulso" | "despachante";
+type ProfileTipo = "admin" | "vendedor" | "fisica" | "juridica";
 
 interface User {
   id: string;
@@ -143,8 +143,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       case 'vendedor':
         navigate('/vendedor/dashboard', { replace: true });
         break;
-      case 'avulso':
-      case 'despachante':
+      case 'fisica':
+      case 'juridica':
         navigate('/cliente/dashboard', { replace: true });
         break;
       default:

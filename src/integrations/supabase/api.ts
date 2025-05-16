@@ -163,7 +163,7 @@ export const fetchClientsCount = async () => {
     const { count, error } = await supabase
       .from('perfis')
       .select('id', { count: 'exact', head: true })
-      .in('tipo', ['avulso', 'despachante']);
+      .in('tipo', ['fisica', 'juridica']);
     
     if (error) {
       console.error('Error fetching clients count:', error);
@@ -251,6 +251,47 @@ export const fetchLowStockProducts = async (limit = 5) => {
   } catch (error) {
     console.error('Error fetching low stock products:', error);
     return [];
+  }
+};
+
+// Serviços (Services) API
+export const fetchServicos = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('servicos')
+      .select('*')
+      .order('nome', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching servicos:', error);
+    toast({
+      title: "Erro ao carregar serviços",
+      description: "Não foi possível carregar os serviços.",
+      variant: "destructive"
+    });
+    return [];
+  }
+};
+
+export const createServico = async (servicoData: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('servicos')
+      .insert(servicoData)
+      .select();
+    
+    if (error) throw error;
+    return data?.[0] || null;
+  } catch (error) {
+    console.error('Error creating servico:', error);
+    toast({
+      title: "Erro ao criar serviço",
+      description: "Não foi possível criar o serviço.",
+      variant: "destructive"
+    });
+    return null;
   }
 };
 

@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
 
-type ProfileTipo = "admin" | "vendedor" | "avulso" | "despachante";
+type ProfileTipo = "admin" | "vendedor" | "fisica" | "juridica";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -44,7 +44,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (allowedRoles.length > 0) {
     const userRole = profile?.tipo;
     
-    if (!userRole || !allowedRoles.includes(userRole)) {
+    if (!userRole || !allowedRoles.includes(userRole as ProfileTipo)) {
       console.log("User doesn't have required role. Current role:", userRole);
       console.log("Redirecting to appropriate dashboard...");
       
@@ -54,8 +54,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           return <Navigate to="/admin/dashboard" replace />;
         case 'vendedor':
           return <Navigate to="/vendedor/dashboard" replace />;
-        case 'avulso':
-        case 'despachante':
+        case 'fisica':
+        case 'juridica':
           return <Navigate to="/cliente/dashboard" replace />;
         default:
           console.log("No valid role found, redirecting to general dashboard");
