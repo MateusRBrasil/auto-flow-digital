@@ -16,7 +16,6 @@ import {
   ClipboardList, 
   Package2, 
   HelpCircle,
-  LogOut,
   Settings
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -25,7 +24,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 
 export default function ClienteSidebar() {
   const navigate = useNavigate();
-  const { signOut, profile } = useAuth();
+  const { profile } = useAuth();
 
   const initials = profile?.nome
     ? profile.nome.split(' ')
@@ -40,11 +39,6 @@ export default function ClienteSidebar() {
     : profile?.tipo === 'juridica' 
       ? 'Pessoa Jurídica' 
       : '';
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
-  };
 
   return (
     <Sidebar>
@@ -101,19 +95,6 @@ export default function ClienteSidebar() {
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Configurações</span>
-                  </Button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sair</span>
                   </Button>
                 </SidebarMenuButton>
               </SidebarMenuItem>

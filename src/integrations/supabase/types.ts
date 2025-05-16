@@ -106,8 +106,10 @@ export type Database = {
           criado_por: string | null
           id: string
           placa: string | null
+          servico_id: string | null
           status: string | null
           tipo_servico: string | null
+          tipo_veiculo: string | null
           valor: number | null
         }
         Insert: {
@@ -116,8 +118,10 @@ export type Database = {
           criado_por?: string | null
           id?: string
           placa?: string | null
+          servico_id?: string | null
           status?: string | null
           tipo_servico?: string | null
+          tipo_veiculo?: string | null
           valor?: number | null
         }
         Update: {
@@ -126,8 +130,10 @@ export type Database = {
           criado_por?: string | null
           id?: string
           placa?: string | null
+          servico_id?: string | null
           status?: string | null
           tipo_servico?: string | null
+          tipo_veiculo?: string | null
           valor?: number | null
         }
         Relationships: [
@@ -150,6 +156,13 @@ export type Database = {
             columns: ["criado_por"]
             isOneToOne: false
             referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_servico_id_fkey"
+            columns: ["servico_id"]
+            isOneToOne: false
+            referencedRelation: "servicos"
             referencedColumns: ["id"]
           },
         ]
@@ -217,6 +230,47 @@ export type Database = {
         }
         Relationships: []
       }
+      servicos: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          id: string
+          item_estoque: string | null
+          nome: string
+          quantidade_consumo: number | null
+          tipo_veiculo: string | null
+          valor_base: number
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          item_estoque?: string | null
+          nome: string
+          quantidade_consumo?: number | null
+          tipo_veiculo?: string | null
+          valor_base?: number
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          item_estoque?: string | null
+          nome?: string
+          quantidade_consumo?: number | null
+          tipo_veiculo?: string | null
+          valor_base?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "servicos_item_estoque_fkey"
+            columns: ["item_estoque"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       clientes_autorizados: {
@@ -257,6 +311,18 @@ export type Database = {
       create_test_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      criar_pedido: {
+        Args: {
+          p_tipo_servico: string
+          p_placa: string
+          p_cliente_id: string
+          p_valor: number
+          p_criado_por: string
+          p_tipo_veiculo: string
+          p_servico_id: string
+        }
+        Returns: string
       }
       grafico_processos_por_mes: {
         Args: Record<PropertyKey, never>

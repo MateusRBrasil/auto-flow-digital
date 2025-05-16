@@ -2,6 +2,17 @@
 import { supabase } from "./client";
 import { toast } from "@/hooks/use-toast";
 
+// Define a type for services
+export interface Servico {
+  id: string;
+  nome: string;
+  descricao?: string;
+  valor_base: number;
+  item_estoque?: string;
+  quantidade_consumo?: number;
+  tipo_veiculo?: string;
+}
+
 // Pedidos (Orders) API
 export const fetchPedidos = async (limit = 100, offset = 0) => {
   try {
@@ -255,9 +266,10 @@ export const fetchLowStockProducts = async (limit = 5) => {
 };
 
 // Serviços (Services) API
-export const fetchServicos = async () => {
+export const fetchServicos = async (): Promise<Servico[]> => {
   try {
-    const { data, error } = await supabase
+    // Use any assertion temporarily until Supabase types are updated
+    const { data, error } = await (supabase as any)
       .from('servicos')
       .select('*')
       .order('nome', { ascending: true });
@@ -275,9 +287,10 @@ export const fetchServicos = async () => {
   }
 };
 
-export const createServico = async (servicoData: any) => {
+export const createServico = async (servicoData: Omit<Servico, 'id'>) => {
   try {
-    const { data, error } = await supabase
+    // Use any assertion temporarily until Supabase types are updated
+    const { data, error } = await (supabase as any)
       .from('servicos')
       .insert(servicoData)
       .select();

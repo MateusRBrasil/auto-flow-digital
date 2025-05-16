@@ -34,6 +34,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Servico } from '@/integrations/supabase/api';
 
 // Define form validation schema
 const formSchema = z.object({
@@ -45,17 +46,7 @@ const formSchema = z.object({
   tipo_veiculo: z.string().optional(),
 });
 
-// Interface for our service type
-interface Servico {
-  id: string;
-  nome: string;
-  descricao?: string;
-  valor_base: number;
-  item_estoque?: string;
-  quantidade_consumo?: number;
-  tipo_veiculo?: string;
-}
-
+// Interface for our estoque item type
 interface EstoqueItem {
   id: string;
   nome: string;
@@ -87,7 +78,7 @@ const ServicosPage: React.FC = () => {
       setIsLoading(true);
       try {
         // Fetch services
-        const { data: servicosData, error: servicosError } = await supabase
+        const { data: servicosData, error: servicosError } = await (supabase as any)
           .from('servicos')
           .select('*')
           .order('nome', { ascending: true });
@@ -141,15 +132,15 @@ const ServicosPage: React.FC = () => {
   const handleAddService = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('servicos')
         .insert({
           nome: values.nome,
           descricao: values.descricao || '',
           valor_base: parseFloat(values.valor_base),
-          item_estoque: values.item_estoque || null,
+          item_estoque: values.item_estoque === 'nenhum' ? null : values.item_estoque || null,
           quantidade_consumo: values.quantidade_consumo || null,
-          tipo_veiculo: values.tipo_veiculo || null,
+          tipo_veiculo: values.tipo_veiculo === 'qualquer' ? null : values.tipo_veiculo || null,
         });
       
       if (error) throw error;
@@ -160,7 +151,7 @@ const ServicosPage: React.FC = () => {
       });
       
       // Refresh the list
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('servicos')
         .select('*')
         .order('nome', { ascending: true });

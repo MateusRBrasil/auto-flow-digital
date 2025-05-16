@@ -24,6 +24,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Servico } from '@/integrations/supabase/api';
 
 const formSchema = z.object({
   tipo_servico: z.string().min(1, { message: 'Escolha um tipo de serviço' }),
@@ -39,14 +40,6 @@ interface Cliente {
   tipo: string; // "fisica" ou "juridica"
 }
 
-interface Servico {
-  id: string;
-  nome: string;
-  valor_base: number;
-  item_estoque?: string;
-  quantidade_consumo?: number;
-}
-
 const CriarPedido: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -56,11 +49,11 @@ const CriarPedido: React.FC = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      tipo_servico: undefined,
+      tipo_servico: '',
       placa: '',
-      cliente_id: undefined,
+      cliente_id: '',
       valor: '',
-      tipo_veiculo: undefined,
+      tipo_veiculo: '',
     }
   });
 
@@ -92,7 +85,7 @@ const CriarPedido: React.FC = () => {
         }
         
         // Fetch services
-        const { data: servicosData, error: servicosError } = await supabase
+        const { data: servicosData, error: servicosError } = await (supabase as any)
           .from('servicos')
           .select('*');
           
@@ -128,7 +121,7 @@ const CriarPedido: React.FC = () => {
       const selectedService = servicos.find(s => s.id === values.tipo_servico);
       
       // Start a transaction
-      const { data, error } = await supabase.rpc('criar_pedido', {
+      const { data, error } = await (supabase.rpc as any)('criar_pedido', {
         p_tipo_servico: selectedService?.nome || values.tipo_servico,
         p_placa: values.placa,
         p_cliente_id: values.cliente_id === 'cliente_avulso' ? null : values.cliente_id,

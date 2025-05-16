@@ -12,14 +12,14 @@ import {
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 
 export default function MainSidebar() {
   const navigate = useNavigate();
-  const { signOut, profile } = useAuth();
+  const { profile } = useAuth();
 
   const initials = profile?.nome
     ? profile.nome.split(' ')
@@ -28,11 +28,6 @@ export default function MainSidebar() {
         .join('')
         .toUpperCase()
     : "U";
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
-  };
 
   return (
     <Sidebar>
@@ -77,19 +72,6 @@ export default function MainSidebar() {
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Configurações</span>
-                  </Button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sair</span>
                   </Button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
